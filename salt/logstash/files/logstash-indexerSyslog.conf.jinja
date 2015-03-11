@@ -1,0 +1,82 @@
+input {
+  redis { 
+    host => '{{ pillar["logstash"]["logstash-indexerSyslog"]["redisIp"] }}'
+    port => '{{ pillar["logstash"]["logstash-indexerSyslog"]["redisPort"] }}'
+    data_type => 'list' 
+    key => '{{ pillar["logstash"]["logstash-indexerSyslog"]["redisKey"] }}'
+    type => 'redis-input' 
+    threads => 4
+    #message_format => "json_event"
+  }
+}
+
+filter {
+  ruby {
+    code => "event['@logtime'] = event['@timestamp'].strftime('%Y-%m-%d %H:%M:%S.%L')"
+  }
+  if [type] == "mySyslog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{mySyslog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    syslog_pri { }
+    mutate {
+      remove_field => [ "syslog_pri", "syslog_facility", "syslog_facility_code" ]
+    }
+    if [syslog_program] == "audit.hist" {
+      grok {
+        patterns_dir => "/etc/logstash/grok-patterns"
+        match => { "syslog_message" => "%{myAuditlog}" }
+        tag_on_failure => ["_grokFail"]
+        add_tag => ["_auditLog"]
+      }
+      mutate {
+        replace => [ "type", "mySyslog-auditLog" ]
+      }
+    }
+  }
+  if [type] == "saltLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{saltLog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
+  if [syslog_program] =~ /sshd|su/ and [syslog_hostip] =~ /10.72.0.186|10.72.0.188|10.72.2.22|10.72.0.22|10.64.1.83|10.64.1.87|10.64.1.89|10.64.5.92|10.80.2.14|10.80.2.15|192.168.95.42|192.168.91.67|10.88.4.76|10.88.6.29|10.88.6.30|10.88.4.81|10.64.0.113|10.64.4.212|10.64.4.213|10.64.4.215|10.80.4.71|10.80.4.72|10.80.4.68|10.80.4.69|10.88.4.102|10.88.4.16|10.88.6.22|10.88.6.23|10.72.5.37|10.72.5.38|10.80.6.96|10.80.6.95|10.88.6.44|192.168.61.68|10.64.0.11|10.64.0.12|10.64.1.76|10.64.1.77|10.64.4.199|10.64.4.200|10.64.4.216|10.64.4.217|10.64.4.218|10.64.4.219|10.64.0.143|10.64.0.144|192.168.112.84|192.168.112.85|10.72.2.183|10.72.2.184|10.72.2.185|10.72.2.186|10.72.2.187/ {
+    grep {
+      match => [ "syslog_message", ".*(Failed|authentication failure)" ]
+      drop  => false
+      add_tag => [tmsSecureFailed]
+    }
+  }
+}
+
+output {
+  exec {
+    tags => [tmsSecureFailed]
+    command => "curl -d 'to=songrunpeng@staff.cntv.cn&subject=logstash syslog alert&body=%{timestamp} %{syslog_hostip}: %{syslog_program} %{syslog_message}' 'http://10.64.12.49:8011/vcsApi/notify.php'"
+  }
+  if [type] == "mySyslog-auditLog" {
+    elasticsearch { 
+      index => "logstash-syslog-auditlog-%{+YYYY.MM}"
+      cluster => "elasticsearch-test-cluster"
+      node_name => "indexer-{{ grains['id'] }}-syslog"
+      idle_flush_time => 5
+    }
+  }
+  else {
+    elasticsearch {
+      workers => 2
+      cluster => "elasticsearch-test-cluster"
+      node_name => "indexer-{{ grains['id'] }}-syslog"
+      flush_size => 200
+      idle_flush_time => 5
+      template => "/etc/logstash/logstashTemplate.json"
+      template_overwrite => true
+    }
+  }
+  #if [type] == "weiboSinaSync2Cntv" {
+  #  stdout { codec => rubydebug}
+  #}
+}

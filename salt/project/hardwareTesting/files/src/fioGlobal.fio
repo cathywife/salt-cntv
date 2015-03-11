@@ -1,0 +1,28 @@
+[global]
+
+#异步io引擎
+ioengine=libaio
+thread=1
+
+#避免缓存
+buffered=0
+direct=1
+
+#运行以下时间，不论是否已达到文件大小
+time_based=1
+runtime=30
+
+directory=/data/disktest
+group_reporting
+
+#libaio异步引擎的参数，iodepth代表同时有多少个异步io请求,numjobs代表同时有多少个子进程，所以 磁盘的并发请求数量 = iodepth * numjobs
+iodepth=4
+
+# iodepth=1 Linear
+# iodepth=16 Light
+# iodepth=64 Moderate
+# iodepth=256 Heavy
+#numjobs和iodepth的区别相必也在此
+#2个worker与一个worker的qd设为2，还是有一定区别的。体现在线程方面，2个worker是两个线程，一个worker是一个线程中一次发 两个请求。 理论上后者比前者要强，因为两线程开销比单线程大，同样为两个请求，单线程一次就可以发出，两线程要分两次，context switch，interrupt等需要引入延迟。另外，queue depth越深，越占便宜，这就是脸皮厚吃个够，这样会饿死其它qd浅的客户端 
+#实测numjobs性能确实不如iodepth，但更接近应用程序并行发起请求的真实情况，所以该测试使用numjobs的变化模拟，iodepth设置为4用以提升性能。
+

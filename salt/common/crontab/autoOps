@@ -1,0 +1,6 @@
+#NTP时间同步
+30 * * * * sudo /usr/sbin/ntpdate 192.168.105.41
+#操作审计日志防删除
+0 0 * * * sudo /usr/local/cntv/sys_changeAuditLogPerm.sh
+#系统进程守护
+* * * * * sudo /usr/local/cntv/sys_watchMonit.sh

@@ -1,0 +1,107 @@
+#http://elasticsearch-users.115913.n3.nabble.com/write-throughput-test-on-elasticsearch-9-high-configuration-nodes-cluster-td4033887.html
+
+input {
+  redis {
+    host => '{{ pillar["logstash"]["logstash-indexerBeaver"]["redisIp"] }}'
+    port => '{{ pillar["logstash"]["logstash-indexerBeaver"]["redisPort"] }}'
+    data_type => 'list' 
+    key => '{{ pillar["logstash"]["logstash-indexerBeaver"]["redisKey"] }}'
+    type => 'beaverLog'
+    batch_count => 2000
+    threads => 5
+  }
+}
+
+filter {
+  ruby {
+    code => "event['@logtime'] = event['@timestamp'].strftime('%Y-%m-%d %H:%M:%S.%L')"
+  }
+  if [type] == "apiWebLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{apiWebLog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    geoip {
+      source => "clientip"
+      add_tag => ["geoip"]
+      database => "/etc/logstash/GeoLiteCity.dat"
+    }
+    ruby {
+      code => "event['processtimesec'] = Integer(event['processtime']) / 1000.0"
+    }
+  }
+  if [type] == "cdnSourcelighttpd" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{cdnSourcelighttpd}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
+  if [type] == "cdnSourceapache" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{cdnSourceapache}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
+  if [type] == "COMBINEDAPACHELOG" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{COMBINEDAPACHELOG}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    geoip {
+      source => "clientip"
+      add_tag => ["geoip"]
+      database => "/etc/logstash/GeoLiteCity.dat"
+    }
+  }
+  if [type] == "weiboSinaSync2Cntv" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{weiboSinaSync2Cntv}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
+  if [type] == "userCenterWebLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{userCenterWebLog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    #date {
+    #  match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    #}
+    #grep {
+    #  match => [ "request", ".gif$|.png$|.jpg$|.js$" ]
+    #  negate => true
+    #}
+  }
+  if [type] == "weiboWebLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{weiboWebLog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    #grep {
+    #  match => [ "request", ".gif$|.png$|.jpg$|.js$" ]
+    #  negate => true
+    #}
+  }
+}
+
+output { 
+  elasticsearch {
+    workers => 4
+    cluster => "elasticsearch-test-cluster"
+    node_name => "indexer-{{ grains['id'] }}-beaver"
+    flush_size => 200
+    idle_flush_time => 5
+    template => "/etc/logstash/logstashTemplate.json"
+    template_overwrite => true
+  }
+  #if [type] == "weiboSinaSync2Cntv" {
+  #  stdout { codec => rubydebug }
+  #}
+}

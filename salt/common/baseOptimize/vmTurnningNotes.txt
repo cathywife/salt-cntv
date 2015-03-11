@@ -1,0 +1,34 @@
+from:http://www.redhat.com/magazine/001nov04/features/vm/
+
+File (IMAP, Web, etc.) Server
+
+This workload is geared towards performing a large amount of I/O to and from the local disk, thus benefiting from an adjustment allowing more files to be maintained in RAM. This speeds up I/O by caching more files in RAM and eliminating the need to wait for disk I/O to complete. A simple change to sysctl.conf as follows usually benefits this workload:
+
+
+#increase the amount of RAM pagecache is allowed to use 
+#before we start moving it back to disk 
+vm.pagecache="10 40 100"
+
+General Compute Server With Many Active Users
+
+This workload is a very general type of configuration. It involves many active users who likely run many processes, all of which may or may not be CPU intensive or I/O intensive or a combination thereof. As the default VM configuration attempts to find a balance between I/O and process memory usage, it may be best to leave most configuration settings alone in this case. However, this environment likely contains many small processes which, regardless of workload, consume memory resources, particularly lowmem. It may help, therefore, to tune the VM to conserve low memory resources when possible:
+
+
+#lower the pagecache max to keep from eating all memory up with cache 
+vm.pagecache=10 25 50 
+#lower max-readahead to reduce the amount of unneeded IO 
+vm.max-readahead=16
+
+Non interactive (Batch) Computing Server
+
+A batch computing server is usually the exact opposite of a file server. Applications run without human interaction, and they commonly perform with little I/O. The number of processes running on controlled. Consequently this system should allow maximum throughput:
+
+
+#Reduce the amount of pagecache normally allowed
+vm.pagecache="1 10 100"
+#do not worry about conserving lowmem, not that many processes
+vm.max_map_count=128000 14
+#crank up overcommit, processes can sleep as they are not interactive
+vm.overcommit=2 
+vm.overcommit_ratio=75
+

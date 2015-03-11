@@ -1,0 +1,18 @@
+python:
+yum install python-argparse
+./sshScan.py -I ips.list -u xtyw -L xtyw.pass -o result_xtyw.log -t 100
+
+cat vmips.list |while read line; do ./sshScan.py -i $line -u xtyw -L xtyw.pass -o result_vm_xtyw.log -t 100; done
+
+c:
+yum install libssh-devel
+make sshtrix
+make install
+/usr/local/bin/sshtrix -R ips.list -L xtyw -K 'xxx' -f result.log
+
+hydra:
+http://www.thc.org/releases/hydra-8.1.tar.gz
+
+./hydra -L /root/sshScan/users.list -P /root/sshScan/topWeakPass.list -u -e sr -t 64 127.0.0.1 ssh
+
+./sshScan.py -i 127.0.0.1 -U users.list -L topWeakPass.list -t 10 -o result.log

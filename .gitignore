@@ -1,0 +1,9 @@
+#防止密码与服务器列表泄露
+data/saltServersList.csv
+pillar/myShadow.sls
+pillar/svnServer.sls
+salt/project/cntvSvnServer/httpd/conf.d/svn-vhost.conf
+salt/project/cntvSvnServer/svnadmin/data/config.ini
+shell/highstate.sh
+salt/project/weakPassScan/ips.list
+salt/project/weakPassScan/users.list

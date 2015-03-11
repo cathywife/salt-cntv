@@ -1,0 +1,26 @@
+master: 10.70.58.196
+backup_mode: minion
+log_file: /var/log/salt/minion
+log_level: info
+dns_check: false
+
+elasticsearch:
+  host: '10.64.1.174:9200'
+  index: 'salt'
+#  number_of_shards: 1
+#  number_of_replicas: 0
+
+ext_job_cache: elasticsearch
+
+grains:
+  roles:
+{%- for role in pillar['roles'] %}
+    - {{ role -}}
+{%- endfor %}
+
+  location:
+{%- if pillar['location'] is iterable %}
+{%- for location in pillar['location'] %}
+    - {{ location -}}
+{%- endfor %}
+{%- endif %}

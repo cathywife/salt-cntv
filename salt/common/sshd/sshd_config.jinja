@@ -1,0 +1,16 @@
+Port					22
+{%- if "weibo" in pillar["roles"] %}
+Port					12322
+{%- endif %}
+Protocol				2
+SyslogFacility				AUTHPRIV
+PermitRootLogin				no
+PermitEmptyPasswords			no
+PasswordAuthentication			yes
+ChallengeResponseAuthentication		no
+GSSAPIAuthentication			no
+GSSAPICleanupCredentials		no
+UsePAM					yes
+X11Forwarding				yes
+UseDNS					no
+Subsystem				sftp		/usr/libexec/openssh/sftp-server
