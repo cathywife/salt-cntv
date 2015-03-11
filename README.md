@@ -3,11 +3,14 @@ salt-cntv
 
 ## Architecture
 
-###本环境是基于角色组件做配置管理的，与salt nodegroup的区别如下：
-项目|服务器|角色|组件|变量|服务器组|服务器列表文件
--|-
+###本环境是基于角色组件做配置管理的，与salt nodegroup的表示方法区别如下：
+
+
+项目 | 服务器  | 角色 | 组件 | 变量 | 服务器组 | 服务器列表文件
+--- | ------- | --- |----- |---- |-------- | ------------
 本环境|ID|roles|states|pillar或project.*组件|无|/data/saltServersList.csv
-salt术语|salt-key|无|states|pillar或grains|nodegroup|无
+salt官方|salt-key|无|states|pillar或grains|nodegroup|无
+
 **不使用nodegroup原因是难维护，无法实现多对多逻辑**
 
 举例：
@@ -58,6 +61,39 @@ halite or salt master cli                       #tiggered tasks by human
 salt minion                                     #make changes and hold the right status on each server!
 ```
 
+###配置使用指南：
+
+1. 客户端部署minion
+2. 分析服务器角色、基本数据输入：/data/saltServersList.csv (可以添加新列)
+3. salt/top.sls 为新角色分配组件
+4. 组件配置
+5. 执行 shell/highstate.sh test 测试效果
+6. 执行 shell/highstate.sh 发布任务
+
+客户端部署脚本：
+```
+#安装salt-minion#
+[ -f /etc/salt/minion ] && { yum remove -y zeromq salt-minion; rm -rf /etc/salt/pki; } 
+adminIP=`/sbin/ifconfig |sed -n '/inet addr/s/^[^:]*:\([0-9.]\{7,15\}\) .*/\1/p' |grep -P "^192|^10" |sort |head -n 1`
+
+#rm -f /etc/yum.repos.d/*
+#curl http://x.x.x.x/webServer/cntvInternal.repo > /etc/yum.repos.d/cntvInternal.repo
+
+#yum groupinstall -y base
+
+yum install -y --enablerepo=cntvInternal zeromq zeromq-devel python-zmq python26-zmq python26-distribute
+yum install -y salt-minion
+
+echo "master: x.x.x.x
+backup_mode: minion
+log_file: /var/log/salt/minion
+log_level: info" > /etc/salt/minion
+echo "$adminIP" > /etc/salt/minion_id
+
+service salt-minion restart
+chkconfig salt-minion on
+#完成#
+```
 
 
 #其他注意事项（可以不看）：
