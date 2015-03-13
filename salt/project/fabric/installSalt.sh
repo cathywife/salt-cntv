@@ -1,8 +1,8 @@
 #!/bin/bash
 #安装salt-minion#
 adminIP=`/sbin/ifconfig |sed -n '/inet addr/s/^[^:]*:\([0-9.]\{7,15\}\) .*/\1/p' |grep -P "^192|^10" |sort |head -n 1`
-sed -i "/saltMaster$\|centralControl$/d" /etc/hosts
-echo -e "10.70.58.196\tsaltMaster\n10.70.63.131\tcentralControl" >> /etc/hosts
+sed -i "/^## base start ##$\|saltMaster$\|centralControl$\|^## base end ##$/d" /etc/hosts
+echo -e "## base start ##\n10.70.58.196\tsaltMaster\n10.70.63.131\tcentralControl\n## base end ##" >> /etc/hosts
 
 [ -f /etc/salt/minion ] && { yum remove -y zeromq salt-minion; rm -rf /etc/salt/pki; } 
 

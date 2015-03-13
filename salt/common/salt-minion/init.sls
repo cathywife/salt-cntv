@@ -1,3 +1,14 @@
+base_hosts:
+  file.blockreplace:
+    - name: /etc/hosts
+    - marker_start: "## base start ##"
+    - marker_end: "## base end ##"
+    - content: |
+        10.70.58.196	saltMaster
+        10.70.63.131	centralControl
+    - append_if_not_found: True
+    - backup: '.bak'
+
 service_salt-minion:
   service.running:
     - name: salt-minion

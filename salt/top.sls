@@ -6,96 +6,59 @@
 #project目录	roles对应的特定包（软件+配置）
 
 base:
-  'roles:base':
-    - match: pillar
+  'P@roles:base':
+    - match: compound
     - common
 
-  'I@roles:svnServer-weibo':
+  'P@roles:(tms-rsync|tms-ftp|tms-app|tms-mysql|api.cntv.cn-web|cdnSource-img|cdnSource-page|cdnSource-page|openLDAP)':
+    - match: compound
+    - common.cmdHistoryAudit
+    - common.rsyslog
+    - common.crontab
+    - common.user
+    - common.motd
+    - common.cntvSysCmds
+    - common.monit
+    - common.sudoers
+
+  'P@roles:(cdnSource-page|cdnSource-page|openLDAP)':
+    - match: compound
+    - beaver
+
+  'P@roles:(openLDAP)':
+    - match: compound
+    - common.hosts
+
+  'P@roles:svnServer-weibo':
     - match: compound
     - svnServer
 
-  'I@roles:api.cntv.cn-web':
+  'P@roles:api.cntv.cn-web':
     - match: compound
     - project.api-ctnv-cn-monit
     - beaver
 
-  'I@roles:yumRepo':
+  'P@roles:yumRepo':
     - match: compound
     - project.yumRepo
     - nginx
 
-  'I@roles:tms-rsync or I@roles:tms-ftp or I@roles:tms-app or I@roles:tms-mysql or I@roles:api.cntv.cn-web':
-    - match: compound
-    - common.cmdHistoryAudit
-    - common.rsyslog
-    - common.crontab
-    - common.user
-    - common.motd
-    - common.cntvSysCmds
-    - common.monit
-    - common.sudoers
-
-  'I@roles:cdnSource-img or I@roles:cdnSource-page or I@roles:openLDAP':
-    - match: compound
-    - common.cmdHistoryAudit
-    - common.rsyslog
-    - common.crontab
-    - common.user
-    - common.motd
-    - common.cntvSysCmds
-    - common.monit
-    - common.sudoers
-    - beaver
-
-  'I@roles:logstash-indexerSyslog or I@roles:logstash-indexerBeaver':
+  'P@roles:logstash-indexerSyslog or I@roles:logstash-indexerBeaver':
     - match: compound
     - logstash
 
-  'I@roles:logstash-es*':
+  'P@roles:logstash-es*':
     - match: compound
     - elasticsearch
 
-  'I@roles:redis':
+  'P@roles:redis':
     - match: compound
     - redis
 
-  'I@roles:syslogCenter':
+  'P@roles:syslogCenter':
     - match: compound
     - beaver
 
-  'I@roles:saltMaster':
+  'P@roles:saltMaster':
     - match: compound
     - beaver
-
-
-
-
-
-
-
-
-
-
-
-#  'roles:admin-svnServer':
-#    - match: pillar
-#    - project.cntvSvnServer
-
-#  'I@roles:logstash-es*':
-#    - match: compound
-#    - elasticsearch
-
-#  'I@roles:logstash-*indexer':
-#    - match: compound
-#    - logstash
-
-#  'I@roles:logstash-redis':
-#    - match: compound
-#    - redis
-
-#  'I@roles:beaver':
-#    - match: compound
-#    - beaver
-
-#  'I@roles:admin-svnServer or I@roles:admin-svnServer-cluster63.228':
-#    - match: compound
