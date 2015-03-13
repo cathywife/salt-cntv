@@ -2,6 +2,20 @@
 beaver:
 {% if grains['roles'] is defined %}
 
+{% if ("openLDAP-slave" in grains["roles"]) %}
+  openLDAP:
+    mainConf: |
+      [beaver]
+      transport: redis
+      redis_url: redis://10.64.0.3:6380/0
+      redis_namespace: logstash:test
+      logstash_version: 1
+      
+      [/var/log/ldap.log]
+      type: openLdapSyslog
+      tags: openLdapSyslog
+{% endif %}
+
 {% if "syslogCenter" in grains["roles"] %}
   syslogCenter:
     mainConf: |
@@ -77,7 +91,6 @@ beaver:
       type: cdnSourceapache
       tags: cdnSource-page
 {% endif %}
-
 
 {% if ("beaver-flvSource" in grains["roles"]) and ("flvSource-thirdParty" in grains["roles"]) %}
   beaver-flvSource:

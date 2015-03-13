@@ -5,7 +5,7 @@ set daemon 10
 set logfile /var/log/monit.log
 
 #mmonit
-set mmonit http://monit:monit@10.70.63.131:8080/collector
+set mmonit http://monit:monit@centralControl:8080/collector
 set eventqueue basedir /usr/local/monit/ slots 1000
 
 #WEB
@@ -48,7 +48,7 @@ Action:		$ACTION
 Date:		$DATE
 Hostname:	$HOST
 
-click for detail: http://{{ grains['id'] }}:30001 or http://10.70.63.131:8080
+click for detail: http://{{ grains['id'] }}:30001 or http://centralControl:8080
 }
 
 #自动加载配置文件

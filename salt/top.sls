@@ -35,7 +35,7 @@ base:
     - common.monit
     - common.sudoers
 
-  'I@roles:cdnSource-img or I@roles:cdnSource-page':
+  'I@roles:cdnSource-img or I@roles:cdnSource-page or I@roles:openLDAP':
     - match: compound
     - common.cmdHistoryAudit
     - common.rsyslog

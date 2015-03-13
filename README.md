@@ -73,28 +73,38 @@ salt minion                                     #make changes and hold the right
 客户端部署脚本：
 ```
 #安装salt-minion#
-[ -f /etc/salt/minion ] && { yum remove -y zeromq salt-minion; rm -rf /etc/salt/pki; } 
 adminIP=`/sbin/ifconfig |sed -n '/inet addr/s/^[^:]*:\([0-9.]\{7,15\}\) .*/\1/p' |grep -P "^192|^10" |sort |head -n 1`
+sed -i "/saltMaster$\|centralControl$/d" /etc/hosts
+echo -e "x.x.x.x\tsaltMaster\nx.x.x.x\tcentralControl" >> /etc/hosts
 
-#rm -f /etc/yum.repos.d/*
-#curl http://x.x.x.x/webServer/cntvInternal.repo > /etc/yum.repos.d/cntvInternal.repo
+[ -f /etc/salt/minion ] && { yum remove -y zeromq salt-minion; rm -rf /etc/salt/pki; } 
 
-#yum groupinstall -y base
+rm -f /etc/yum.repos.d/*
+curl http://centralControl/webServer/cntvInternal.repo > /etc/yum.repos.d/cntvInternal.repo
 
-yum install -y --enablerepo=cntvInternal zeromq zeromq-devel python-zmq python26-zmq python26-distribute
-yum install -y salt-minion
-
-echo "master: x.x.x.x
+yum groupinstall -y base
+yum install -y --enablerepo=cntvInternal zeromq zeromq-devel python-zmq python26-zmq python26-distribute salt-minion
+\cp /etc/salt/minion /etc/salt/minion.bak
+echo "master: saltMaster
 backup_mode: minion
 log_file: /var/log/salt/minion
 log_level: info" > /etc/salt/minion
 echo "$adminIP" > /etc/salt/minion_id
-
 service salt-minion restart
 chkconfig salt-minion on
 #完成#
 ```
 
+###使用fabric批量部署客户端：
+```
+yum install python-pip gmp-devel gcc python-devel
+pip install fabric
+
+salt/project/fabric/fabfile.py
+salt/project/fabric/installSalt.sh
+
+fab go
+```
 
 #其他注意事项（可以不看）：
 
@@ -107,14 +117,14 @@ http://docs.jinkan.org/docs/jinja2/templates.html
 
 	salt "*" pillar.data
 ```
-10.70.32.105:
+x.x.x.x:
     ----------
     CentOS-6:
         - none
     Roles:
         - common-base
 
-10.70.63.131-logstash:
+x.x.x.x-logstash:
     ----------
     CentOS-5:
         - none

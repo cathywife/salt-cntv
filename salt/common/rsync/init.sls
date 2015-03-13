@@ -37,7 +37,7 @@ rsync_admin-svnServer:
                 path            = /data/svn
                 ignore errors   = yes
                 read only       = no
-                hosts allow     = 10.70.63.131, 10.70.63.228, 10.70.58.196
+                hosts allow     = 10.70.63.228, 10.70.58.196, centralControl
                 auth users      = user
                 secrets file    = /etc/rsyncd_salt.secrets
                 hosts deny      = *
@@ -47,7 +47,7 @@ rsync_admin-svnServer:
                 path            = /data/jenkins
                 ignore errors   = yes
                 read only       = no
-                hosts allow     = 10.70.63.131, 10.70.63.228, 10.70.58.196
+                hosts allow     = 10.70.63.228, 10.70.58.196, centralControl
                 auth users      = user
                 secrets file    = /etc/rsyncd_salt.secrets
                 hosts deny      = *
