@@ -51,6 +51,10 @@ base:
     - match: compound
     - elasticsearch
 
+  'P@roles:collectd':
+    - match: compound
+    - collectd
+
   'P@roles:redis':
     - match: compound
     - redis

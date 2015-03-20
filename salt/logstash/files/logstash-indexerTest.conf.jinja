@@ -1,44 +1,17 @@
 input {
-  redis { 
-    host => '{{ pillar["logstash"]["logstash-indexerSyslog"]["redisIp"] }}'
-    port => '{{ pillar["logstash"]["logstash-indexerSyslog"]["redisPort"] }}'
-    data_type => 'list' 
-    key => '{{ pillar["logstash"]["logstash-indexerSyslog"]["redisKey"] }}'
-    type => 'redis-input' 
-    threads => 4
-    #message_format => "json_event"
-  }
-}
-
-filter {
-  ruby {
-    code => "event['@logtime'] = event['@timestamp'].strftime('%Y-%m-%d %H:%M:%S.%L')"
-  }
-  if [type] == "openLdapSyslog" {
-    grok {
-      patterns_dir => "/etc/logstash/grok-patterns"
-      match => { "message" => "%{openLdapSyslog}" }
-      tag_on_failure => ["_grokFail"]
-    }
-    syslog_pri { }
-    mutate {
-      remove_field => [ "syslog_pri", "syslog_facility", "syslog_facility_code" ]
-    }
+  collectd {
+    port => 25826
+    type => collectd
   }
 }
 
 output {
   elasticsearch {
-    document_id => "%{@timestamp}-%{ldap_connID}"
     workers => 2
     cluster => "elasticsearch-test-cluster"
-    node_name => "indexer-{{ grains['id'] }}-syslog"
+    node_name => "indexer-{{ grains['id'] }}-collectd"
     flush_size => 200
     idle_flush_time => 5
-    template => "/etc/logstash/logstashTemplate.json"
-    template_overwrite => true
   }
-  #if [type] == "weiboSinaSync2Cntv" {
-  #  stdout { codec => rubydebug}
-  #}
+  stdout { codec => rubydebug}
 }

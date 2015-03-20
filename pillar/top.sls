@@ -20,6 +20,7 @@ base:
     - location
 ####predefined:####
     - beaver
+    - collectd
     - crontab
     - elasticsearch
     - ldapAllowGroupsDict

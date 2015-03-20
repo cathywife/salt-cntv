@@ -14,6 +14,13 @@ filter {
   ruby {
     code => "event['@logtime'] = event['@timestamp'].strftime('%Y-%m-%d %H:%M:%S.%L')"
   }
+  if [type] == "openLdapSyslog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{openLdapSyslog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
   if [type] == "mySyslog" {
     grok {
       patterns_dir => "/etc/logstash/grok-patterns"
@@ -72,8 +79,8 @@ output {
       node_name => "indexer-{{ grains['id'] }}-syslog"
       flush_size => 200
       idle_flush_time => 5
-      template => "/etc/logstash/logstashTemplate.json"
-      template_overwrite => true
+      #template => "/etc/logstash/logstashTemplate.json"
+      #template_overwrite => true
     }
   }
   #if [type] == "weiboSinaSync2Cntv" {

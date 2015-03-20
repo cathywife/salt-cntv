@@ -114,4 +114,4 @@ myAuditlog %{IP:audit_clientip}\|%{USERNAME:audit_user}\|%{USERNAME:audit_asuser
 
 saltLog %{TIMESTAMP_ISO8601:timestamp} \[%{NOTSPACE:salt_facility}\s*\]\[%{NOTSPACE:salt_priority}\s*\] %{GREEDYDATA:salt_message}
 
-openLdapSyslog %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}: conn=%{INT:ldap_connID} %{WORD:ldap_opt}=%{INT:ldap_optID} %{WORD:ldap_action}(?: from IP=%{IPORHOST:client}| dn="%{GREEDYDATA:ldap_user}")
+openLdapSyslog %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}: conn=%{INT:ldap_connID} %{WORD:ldap_opt}=%{INT:ldap_optID} %{WORD:ldap_action}(?: from IP=%{IPORHOST:client}| dn="uid=%{NOTSPACE:ldap_user},ou=%{GREEDYDATA:ldap_user_info}"| base="%{GREEDYDATA:ldap_srch}" %{GREEDYDATA:ldap_srch_opt}| %{GREEDYDATA:ldap_other}|)

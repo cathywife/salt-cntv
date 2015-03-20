@@ -8,7 +8,7 @@ beaver:
       [beaver]
       transport: redis
       redis_url: redis://10.64.0.3:6380/0
-      redis_namespace: logstash:test
+      redis_namespace: logstash:syslog
       logstash_version: 1
       
       [/var/log/ldap.log]

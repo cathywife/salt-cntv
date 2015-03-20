@@ -25,6 +25,7 @@ logstashContrib_pkg:
 /etc/logstash:
   file.recurse:
     - source: salt://logstash/files/etc
+    - exclude_pat: E@\.svn
     - user: root
     - group: root
     - file_mode: 0644
