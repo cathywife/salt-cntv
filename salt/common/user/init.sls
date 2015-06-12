@@ -20,6 +20,8 @@
     - dir_mode: 700
     - makedirs: True
     - contents_pillar: myShadow:system:autoOps:sshKey_priv
+    - require:
+      - user: autoOps
 
 /home/autoOps/.ssh/id_rsa.pub:
   file.managed:
@@ -29,6 +31,8 @@
     - dir_mode: 700
     - makedirs: True
     - contents_pillar: myShadow:system:autoOps:sshKey_pub
+    - require:
+      - user: autoOps
 
 /root/.ssh/id_rsa:
   file.managed:

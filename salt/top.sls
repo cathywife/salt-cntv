@@ -6,12 +6,13 @@
 #project目录	roles对应的特定包（软件+配置）
 
 base:
-  'P@roles:base':
+  'P@roles:baseA':
     - match: compound
     - common
 
-  'P@roles:(tms-rsync|tms-ftp|tms-app|tms-mysql|api.cntv.cn-web|cdnSource-img|cdnSource-page|cdnSource-page|openLDAP)':
+  'P@roles:baseB':
     - match: compound
+    - common.baseHosts
     - common.cmdHistoryAudit
     - common.rsyslog
     - common.crontab
@@ -21,27 +22,23 @@ base:
     - common.monit
     - common.sudoers
 
-  'P@roles:(cdnSource-page|cdnSource-page|openLDAP)':
+  'P@roles:logCollecter':
     - match: compound
     - beaver
 
-  'P@roles:(openLDAP)':
-    - match: compound
-    - common.hosts
-
-  'P@roles:svnServer-weibo':
+  'P@roles:svnServer':
     - match: compound
     - svnServer
-
-  'P@roles:api.cntv.cn-web':
-    - match: compound
-    - project.api-ctnv-cn-monit
-    - beaver
 
   'P@roles:yumRepo':
     - match: compound
     - project.yumRepo
     - nginx
+
+  'P@roles:api.cntv.cn-web':
+    - match: compound
+    - project.api-cntv-cn-web
+    - beaver
 
   'P@roles:logstash-indexerSyslog or I@roles:logstash-indexerBeaver':
     - match: compound
@@ -59,10 +56,9 @@ base:
     - match: compound
     - redis
 
-  'P@roles:syslogCenter':
+  'P@roles:smtpRelayServer':
     - match: compound
-    - beaver
+    - postfix
 
-  'P@roles:saltMaster':
-    - match: compound
-    - beaver
+#  'P@roles:(tms-rsync|tms-ftp|tms-app|tms-mysql|api.cntv.cn-web|cdnSource-img|cdnSource-page|cdnSource-page|openLDAP)':
+#    - match: compound

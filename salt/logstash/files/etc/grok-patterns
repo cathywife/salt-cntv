@@ -87,24 +87,23 @@ QS %{QUOTEDSTRING}
 
 # Log formats
 SYSLOGBASE %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}:
-COMMONAPACHELOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
+COMMONAPACHELOG (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
 COMBINEDAPACHELOG %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent}
+
 
 # Log Levels
 LOGLEVEL ([Aa]lert|ALERT|[Tt]race|TRACE|[Dd]ebug|DEBUG|[Nn]otice|NOTICE|[Ii]nfo|INFO|[Ww]arn?(?:ing)?|WARN?(?:ING)?|[Ee]rr?(?:or)?|ERR?(?:OR)?|[Cc]rit?(?:ical)?|CRIT?(?:ICAL)?|[Ff]atal|FATAL|[Ss]evere|SEVERE|EMERG(?:ENCY)?|[Ee]merg(?:ency)?)
 
 # My Formats
-COMBINEDAPACHELOG %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent}
+apiWebLog %{COMBINEDAPACHELOG}(?: %{NUMBER:processtime:int}| -|)
 
-apiWebLog %{COMBINEDAPACHELOG} (?:%{NUMBER:processtime}|-)
+cdnSourcelighttpd (?:%{IPORHOST:clientip}|-) - (?:%{IPORHOST:host}|-) - \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:agent} %{QS:referrer}
 
-cdnSourcelighttpd %{IPORHOST:clientip} - (?:%{IPORHOST:host}|-) - \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:agent} %{QS:referrer}
-
-cdnSourceapache %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes:int}|-) "(?:%{IPORHOST:realclientip}|-)"
+cdnSourceapache (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{IPORHOST:realclientip}|-)"
 
 weiboSinaSync2Cntv %{NOTSPACE:date} %{NOTSPACE:time} %{NOTSPACE:method} %{GREEDYDATA:data}
 
-userCenterWebLog %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{URIPATHPARAM:request}(?: HTTP/%{NUMBER:httpversion})?|-)" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" %{QS:agent} "%{GREEDYDATA:cntv_user_id}" "%{GREEDYDATA:access_key}" "%{GREEDYDATA:realclientip}"
+userCenterWebLog (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{URIPATHPARAM:request}(?: HTTP/%{NUMBER:httpversion})?|-)" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" %{QS:agent} "%{GREEDYDATA:cntv_user_id}" "%{GREEDYDATA:access_key}" "%{GREEDYDATA:realclientip}"
 
 weiboWebLog (?:%{IPORHOST:clientip}|-) %{IPORHOST:fwip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} %{QS:agent} %{IPORHOST:hostip} %{NUMBER:loadtime}
 
@@ -115,3 +114,11 @@ myAuditlog %{IP:audit_clientip}\|%{USERNAME:audit_user}\|%{USERNAME:audit_asuser
 saltLog %{TIMESTAMP_ISO8601:timestamp} \[%{NOTSPACE:salt_facility}\s*\]\[%{NOTSPACE:salt_priority}\s*\] %{GREEDYDATA:salt_message}
 
 openLdapSyslog %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}: conn=%{INT:ldap_connID} %{WORD:ldap_opt}=%{INT:ldap_optID} %{WORD:ldap_action}(?: from IP=%{IPORHOST:client}| dn="uid=%{NOTSPACE:ldap_user},ou=%{GREEDYDATA:ldap_user_info}"| base="%{GREEDYDATA:ldap_srch}" %{GREEDYDATA:ldap_srch_opt}| %{GREEDYDATA:ldap_other}|)
+
+apiCmsInterfaceLog %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NOTSPACE:class} - requestIp:%{IPORHOST:clientip} %{NOTSPACE:null} %{NOTSPACE:class} %{IPORHOST:hostip} %{NOTSPACE:null}#requestUrl:%{NOTSPACE:requestUrl}#requestParam:%{NOTSPACE:requestParam}#dataFrom:%{NOTSPACE:dataFrom}#requestTime:(?:%{INT:requestTime:int}ms|)
+
+apiCmsInterfaceLogNew %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NOTSPACE:class} - requestIp:%{IPORHOST:clientip}#requestUrl:%{NOTSPACE:requestUrl}#requestParam:%{NOTSPACE:requestParam}#dataFrom:%{NOTSPACE:dataFrom}#requestTime:(?:%{INT:requestTime:int}ms|)
+
+tvWebLog %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent} %{QS:realclientip}
+
+apiAppLog Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:%{NOTSPACE:processtime_float:float}秒#Statu:(?:%{NOTSPACE:result}#Type:%{NOTSPACE:apiType}#Service:(?:%{NOTSPACE:service}#|%{NOTSPACE:service})|%{NOTSPACE:result}#|%{NOTSPACE:result})

@@ -62,6 +62,8 @@ logstashContrib_pkg:
     - contents_pillar: logstash:{{role}}:initConf
     - require:
       - pkg: logstash_pkg
+
+##启动服务@@
 logstash_{{role}}_service:
   service.running:
     - name: {{ role }}
@@ -69,5 +71,24 @@ logstash_{{role}}_service:
     - timeout: 15
     - watch:
       - file: /etc/logstash/{{role}}.conf
+
+##监控服务@@
+/usr/local/monit/etc/inc/{{ role }}.cfg:
+  file.managed:
+    - source: salt://logstash/files/logstash-indexer-monit.cfg.jinja
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 700
+    - makedirs: True
+    - context:
+      role: {{role}}
+
+{{ role }}_monit:
+  cmd.wait:
+    - name: killall -9 monit; /usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc
+    - watch:
+      - file: /usr/local/monit/etc/inc/{{ role }}.cfg
+
 {% endif %}
 {% endfor %}

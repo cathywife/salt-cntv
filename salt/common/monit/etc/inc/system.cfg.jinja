@@ -4,6 +4,37 @@ check file system.cfg path /usr/local/monit/etc/inc/system.cfg
 	if changed sha1 checksum 
 		then exec "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
 
+#系统检查
+{%- if pillar['desc'] is iterable %}
+check system {% for description in pillar['desc'] -%}
+	{{ description -}}
+	{% endfor %}-{{ grains['id'] }}
+{%- else %}
+check system {{ grains['id'] }}
+{%- endif %}
+	group system
+{%- if pillar['roles'] is iterable  %}
+{%- if ("logstash-esNode" in pillar["roles"]) or ("logstash-esSearchNode" in pillar["roles"]) or ("logstash-esMonitorNode" in pillar["roles"]) %}
+	if swap usage > 50% then alert
+	if cpu usage (user) > 80% for 3 cycles then alert
+	if cpu usage (system) > 80% for 3 cycles then alert
+	if cpu usage (wait) > 80% for 3 cycles then alert
+
+#磁盘空间
+check filesystem root with path /
+	group system
+	if space usage > 95% then alert
+
+check filesystem var with path /var
+	group system
+	if space usage > 95% then alert
+{%- else %}
+	if memory usage > 98% then alert
+	if swap usage > 25% then alert
+	if cpu usage (user) > 80% for 3 cycles then alert
+	if cpu usage (system) > 80% for 3 cycles then alert
+	if cpu usage (wait) > 80% for 3 cycles then alert
+
 #磁盘空间
 check filesystem root with path /
 	group system
@@ -12,24 +43,30 @@ check filesystem root with path /
 check filesystem var with path /var
 	group system
 	if space usage > 80% then alert
+{%- endif %}
+{%- endif %}
 
 #服务进程
 check process sshd with pidfile /var/run/sshd.pid
 	group system
 	start program = "/etc/init.d/sshd start"
 	stop program  = "/etc/init.d/sshd stop"
+	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
 
 check process crond with pidfile /var/run/crond.pid
 	group system
 	start program = "/etc/init.d/crond start"
 	stop  program = "/etc/init.d/crond stop; /usr/bin/killall crond"
+	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
 
 check process rsyslog with pidfile /var/run/rsyslogd.pid
 	group system
 	start program = "/etc/init.d/rsyslog start"
 	stop  program = "/etc/init.d/rsyslog stop; /usr/bin/killall rsyslogd"
+	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
 
-{%- if "base" in pillar["roles"] %}
+{%- if pillar["roles"] is iterable %}
+{%- if "baseA" in pillar["roles"] %}
 check process nslcd with pidfile /var/run/nslcd/nslcd.pid
 	group system
 	start program = "/sbin/nslcd"
@@ -40,6 +77,8 @@ check process cntvCMS with pidfile /var/run/rsyncd_cntvCms.pid
 	start program = "/usr/bin/rsyncCntvCms --daemon --config=/etc/cntvCms/rsyncd.conf --port 7878"
 	stop  program = "/usr/bin/killall rsyncCntvCms"
 	if failed port 7878 then restart
+	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+{%- endif %}
 {%- endif %}
 
 #check process snmpd with pidfile /var/run/snmpd

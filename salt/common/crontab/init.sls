@@ -1,10 +1,13 @@
 ##添加系统用户@@
 autoOps:
+  group:
+    - present
   user.present:
     - uid: 7878
     - shell: "/bin/bash"
     - home: "/home/autoOps"
     - groups:
+        - autoOps
         - wheel
 
 /home/autoOps/.ssh/authorized_keys:
@@ -32,10 +35,14 @@ autoOps:
 {{ crontabName }}_crontab:
   file.blockreplace:
     - name: /etc/crontab
-    - marker_start: "## {{ crontabName }} start ##"
-    - marker_end: "## {{ crontabName }} end ##"
-    - contents_pillar: crontab:rootCrontab:{{crontabName}}
+    - marker_start: "## {{crontabName}} start ##"
+    - marker_end: "## {{crontabName}} end ##"
+    - content: |
+        {{ pillar["crontab"]["rootCrontab"][crontabName] }}
     - append_if_not_found: True
     - backup: '.bak'
 {% endfor %}
 {% endif %}
+
+
+

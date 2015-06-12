@@ -1,0 +1,15 @@
+#自动加载配置文件
+CHECK FILE api.cntv.cn-web.cfg PATH /usr/local/monit/etc/inc/api.cntv.cn-web.cfg
+	IF CHANGED SHA1 CHECKSUM
+		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
+
+#检查服务
+CHECK PROCESS api.cntv.cn-web-apache
+	WITH PIDFILE /usr/local/apache2/logs/httpd.pid
+	#start program = "/usr/local/apache2/bin/httpd -k start" with timeout 10 seconds
+	#stop program  = "/usr/local/apache2/bin/httpd -k stop"
+	IF CPU > 60% FOR 5 CYCLES THEN ALERT
+	IF MEMORY > 256 MB FOR 5 CYCLES THEN ALERT
+	IF CHILDREN > 700 FOR 5 CYCLES THEN ALERT
+	IF LOADAVG(5MIN) > 20 FOR 5 CYCLES THEN ALERT
+	IF FAILED PORT 80 PROTOCOL HTTP THEN ALERT

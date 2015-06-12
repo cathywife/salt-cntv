@@ -20,7 +20,7 @@ function convf()
 			done
 			if [  "$1" == "roles" ]
 			then
-				cat /tmp/res |sort |uniq
+				cat /tmp/res 2> /dev/null |sort |uniq
 				rm -f /tmp/res
 			fi
 		done

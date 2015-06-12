@@ -1,8 +1,7 @@
 ####单机单实例配置@@
-
-##pillar名称@@
 collectd:
 {% if grains['roles'] is defined %}
+{% if grains['roles'] is iterable %}
 
 {% if 'collectd' in grains['roles'] %}
   mainConf: |
@@ -25,4 +24,6 @@ collectd:
     </Plugin>
 {% endif %}
 
+##判断minion是否已经初始化@@
+{% endif %}
 {% endif %}

@@ -1,6 +1,7 @@
 ####单机单实例配置@@
 redis:
 {% if grains['roles'] is defined %}
+{% if grains['roles'] is iterable %}
 
   {% if 'logstash-indexerSyslog' in grains['roles'] or 'logstash-indexerBeaver' in grains['roles'] %}
   {% set logDir = "/var/log/redis" %}
@@ -33,11 +34,11 @@ redis:
     repl-disable-tcp-nodelay no
     slave-priority 100
     maxclients 65535
-    maxmemory {{(grains['mem_total']/4)|round|int}}mb
+    maxmemory {{(grains['mem_total']/3)|round|int}}mb
     maxmemory-policy allkeys-lru
     appendonly no
-    appendfsync everysec
-    no-appendfsync-on-rewrite no
+    #appendfsync everysec
+    no-appendfsync-on-rewrite yes
     auto-aof-rewrite-percentage 100
     auto-aof-rewrite-min-size 64mb
     lua-time-limit 5000
@@ -64,4 +65,6 @@ redis:
             lockfile=/var/lock/subsys/redis-{{port}}
   {% endif %}
 
+##判断minion是否已经初始化@@
+{% endif %}
 {% endif %}

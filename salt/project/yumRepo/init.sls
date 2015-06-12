@@ -17,6 +17,17 @@ createrepo:
     - mode: 0644
     - makedirs: True
 
+/repo/cntvInternal:
+  file.recurse:
+    - source: salt://project/yumRepo/repos/cntvInternal
+    - exclude_pat: E@\.svn
+    - user: root
+    - group: root
+    - file_mode: 0755
+    - dir_mode: 0755
+    - makedirs: True
+    - clean: True
+
 /usr/local/cntv/yumSync/cntvInternalRepoSync.sh:
   file.managed:
     - source: salt://project/yumRepo/files/cntvInternalRepoSync.sh
@@ -27,20 +38,25 @@ createrepo:
     - require:
       - pkg: createrepo
 
-/usr/local/cntv/yumSync/cntvInternalRepoSync.list:
+yumRepo_run:
+  cmd.run:
+    - name: '/usr/local/cntv/yumSync/cntvInternalRepoSync.sh'
+    - user: root
+    - require:
+      - file: /repo/cntvInternal
+      - file: /usr/local/cntv/yumSync/cntvInternalRepoSync.sh
+
+/usr/local/monit/etc/inc/yumRepo.cfg:
   file.managed:
-    - source: salt://project/yumRepo/files/cntvInternalRepoSync.list
+    - source: salt://project/yumRepo/files/yumRepo-monit.cfg
+    - template: jinja
     - user: root
     - group: root
-    - mode: 0644
+    - mode: 700
     - makedirs: True
 
-/repo/cntvInternal:
-  file.recurse:
-    - source: salt://project/yumRepo/repos/cntvInternal
-    - exclude_pat: E@\.svn
-    - user: root
-    - group: root
-    - file_mode: 0755
-    - dir_mode: 0755
-    - makedirs: True
+yumRepo_monit:
+  cmd.wait:
+    - name: killall -9 monit; /usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc
+    - watch:
+      - file: /usr/local/monit/etc/inc/yumRepo.cfg

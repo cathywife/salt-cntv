@@ -2,14 +2,15 @@ sudoers_append:
 
   file.blockreplace:
     - name: /etc/sudoers
-{%- if "base" in pillar['roles'] %}
+{%- if "baseA" in pillar['roles'] %}
     - marker_start: "## Allows people in group wheel to run all commands"
 {% else %}
     - marker_start: "## Same thing without a password"
 {%- endif %}
     - marker_end: "## Allows members of the users group to mount and unmount the "
     - content: |
-{%- if "base" in pillar['roles'] %}
+{%- if "baseA" in pillar['roles'] %}
+        %wheel             ALL=(ALL)       ALL
         %ops               ALL=(ALL)       ALL
         %appops            ALL=(ALL)       ALL
         %operations        ALL=(ALL)       ALL
@@ -17,7 +18,6 @@ sudoers_append:
         %outsourcingOps    ALL=(ALL)       ALL
         {%- if "weibo" in pillar["roles"] %}
         %iops              ALL=(ALL)       ALL
-        %wheel             ALL=(ALL)       ALL
         {%- endif %}
         {%- if "ldapAllowGroups" in pillar %}
         {%- if "dev" in pillar["ldapAllowGroups"] %}

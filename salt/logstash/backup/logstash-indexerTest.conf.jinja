@@ -1,0 +1,17 @@
+input {
+  collectd {
+    port => 25826
+    type => collectd
+  }
+}
+
+output {
+  elasticsearch {
+    workers => 2
+    cluster => "elasticsearch-test-cluster"
+    node_name => "indexer-{{ grains['id'] }}-collectd"
+    flush_size => 200
+    idle_flush_time => 5
+  }
+  stdout { codec => rubydebug}
+}

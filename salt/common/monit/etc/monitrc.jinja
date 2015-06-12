@@ -5,68 +5,56 @@ set daemon 10
 set logfile /var/log/monit.log
 
 #mmonit
-set mmonit http://monit:monit@centralControl:8080/collector
+set mmonit http://monit:monit@centralControl:8000/collector
 set eventqueue basedir /usr/local/monit/ slots 1000
 
-#WEB
-	#设置http监控页面的端口
-	set httpd port 30001
-
-	#http监控页面的IP或域名
-	use address {{ grains['id'] }}
-
-	#允许内网访问
-	allow 127.0.0.1
-	allow 10.0.0.0/255.0.0.0
-	allow 172.16.0.0/255.240.0.0
-	allow 192.168.0.0/255.255.0.0
-
-	#设置管理用户密码
-	allow {{ pillar['myShadow']['monit']['secretString'] }}
+##WEB
+#	#设置http监控页面的端口
+#	set httpd port 7879
+#	#http监控页面的IP或域名
+#	use address {{ grains['id'] }}
+#	#允许内网访问
+#	allow centralControl
+#	allow 10.65.0.0/255.255.0.0
+#	#设置管理用户密码
+#	allow {{ pillar['myShadow']['monit']['secretString'] }}
 
 #邮件报警：
-	set mailserver 10.64.12.49
+{% if pillar['maintainers'] is iterable %}
+	set mailserver 10.64.12.49 port 25
+	username "monit@cntv.priv" password "monit"
 	with timeout 30 seconds
 	{% for email in pillar['maintainers'] -%}
 	set alert {{email}}
 	{% endfor -%}
 	set mail-format {
 from: {{ pillar['myShadow']['monit']['emailFrom'] }}
-subject: {% for description in pillar['desc'] -%}
+subject: $DESCRIPTION from {% for description in pillar['desc'] -%}
 	{{ description -}}
-	{% endfor %}-{{ grains['id'] }} $SERVICE $EVENT -monit
+	{% endfor %}-{{ grains['id'] }}
 message: 
 
 {% for description in pillar['desc'] -%}
 	{{ description -}}
 	{% endfor %}-{{ grains['id'] }} $SERVICE $EVENT
 
+Date:		$DATE
 IP:			{{ grains['id'] }}
+Hostname:	$HOST
 Service:		$SERVICE
+Event:		$EVENT
 Description:	$DESCRIPTION
 Action:		$ACTION
-Date:		$DATE
-Hostname:	$HOST
 
-click for detail: http://{{ grains['id'] }}:30001 or http://centralControl:8080
+click for detail: http://10.70.63.131:8000/index.csp
 }
+{% endif %}
 
 #自动加载配置文件
 check file monitrc path /usr/local/monit/etc/monitrc
 	group system
 	if changed sha1 checksum 
 		then exec "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
-
-#系统检查
-check system {% for description in pillar['desc'] -%}
-	{{ description -}}
-	{% endfor %}-{{ grains['id'] }}
-	group system
-	if memory usage > 98% then alert
-	if swap usage > 25% then alert
-	if cpu usage (user) > 80% for 3 cycles then alert
-	if cpu usage (system) > 80% for 3 cycles then alert
-	if cpu usage (wait) > 50% then alert
 
 #设置包含配置文件
 include /usr/local/monit/etc/inc/*.cfg

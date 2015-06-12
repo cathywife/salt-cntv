@@ -86,7 +86,21 @@ service_elasticsearch:
     - enable: True
     - watch:
       - pkg: elasticsearch-pkg
-      - file: /usr/share/elasticsearch/plugins.tgz
-      - file: ES_MIN_MEM in elasticsearch.in.sh
-      - file: ES_MAX_MEM in elasticsearch.in.sh
-      - file: /etc/elasticsearch/elasticsearch.yml
+
+
+##监控服务@@
+
+/usr/local/monit/etc/inc/logstash-es.cfg:
+  file.managed:
+    - source: salt://elasticsearch/files/logstash-es-monit.cfg
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 700
+    - makedirs: True
+
+elasticsearch_monit:
+  cmd.wait:
+    - name: killall -9 monit; /usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc
+    - watch:
+      - file: /usr/local/monit/etc/inc/logstash-es.cfg

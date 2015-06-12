@@ -65,25 +65,23 @@ output {
     command => "curl -d 'to=songrunpeng@staff.cntv.cn&subject=logstash syslog alert&body=%{timestamp} %{syslog_hostip}: %{syslog_program} %{syslog_message}' 'http://10.64.12.49:8011/vcsApi/notify.php'"
   }
   if [type] == "mySyslog-auditLog" {
-    elasticsearch { 
+    elasticsearch_http {
       index => "logstash-syslog-auditlog-%{+YYYY.MM}"
-      cluster => "elasticsearch-test-cluster"
-      node_name => "indexer-{{ grains['id'] }}-syslog"
-      idle_flush_time => 5
+      host => localhost
+      port => 9200
+      flush_size => 500
+      idle_flush_time => 1
+      workers => 2
     }
   }
   else {
-    elasticsearch {
+    elasticsearch_http {
+      host => localhost
+      port => 9200
+      flush_size => 500
+      idle_flush_time => 1
       workers => 2
-      cluster => "elasticsearch-test-cluster"
-      node_name => "indexer-{{ grains['id'] }}-syslog"
-      flush_size => 200
-      idle_flush_time => 5
-      #template => "/etc/logstash/logstashTemplate.json"
-      #template_overwrite => true
     }
   }
-  #if [type] == "weiboSinaSync2Cntv" {
-  #  stdout { codec => rubydebug}
-  #}
+  #stdout { codec => rubydebug}
 }

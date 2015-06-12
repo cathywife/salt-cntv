@@ -1,8 +1,7 @@
 ####单机多实例配置@@
-
-##pillar名称@@
 logstash:
 {% if grains['roles'] is defined %}
+{% if grains['roles'] is iterable %}
 
 {% if 'logstash-indexerSyslog' in grains['roles'] %}
   logstash-indexerSyslog:
@@ -14,7 +13,7 @@ logstash:
       LS_HOME=/var/lib/logstash
       LS_HEAP_SIZE="{{(grains['mem_total']*0.2)|round|int}}m"
       #LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-      LS_JAVA_OPTS="-Xmx{{(grains['mem_total']*0.2)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.2)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
       LS_WORKER_THREADS=2
       #LS_PIDFILE=/var/run/logstash.pid
       #LS_USER=logstash
@@ -33,10 +32,10 @@ logstash:
     initConf: |
       JAVACMD=/usr/bin/java
       LS_HOME=/var/lib/logstash
-      LS_HEAP_SIZE="{{(grains['mem_total']*0.5)|round|int}}m"
+      LS_HEAP_SIZE="{{(grains['mem_total']*0.3)|round|int}}m"
       #LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-      LS_JAVA_OPTS="-Xmx{{(grains['mem_total']*0.5)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
-      LS_WORKER_THREADS=4
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.3)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_WORKER_THREADS=8
       #LS_PIDFILE=/var/run/logstash.pid
       #LS_USER=logstash
       #LS_LOG_FILE=/var/log/logstash/logstash-web.log
@@ -56,7 +55,7 @@ logstash:
       LS_HOME=/var/lib/logstash
       LS_HEAP_SIZE="{{(grains['mem_total']*0.5)|round|int}}m"
       #LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-      LS_JAVA_OPTS="-Xmx{{(grains['mem_total']*0.5)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.5)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
       LS_WORKER_THREADS=4
       #LS_PIDFILE=/var/run/logstash.pid
       #LS_USER=logstash
@@ -67,4 +66,6 @@ logstash:
       LS_NICE=0
 {% endif %}
 
+##判断minion是否已经初始化@@
+{% endif %}
 {% endif %}

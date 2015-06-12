@@ -1,0 +1,14 @@
+#自动加载配置文件
+CHECK FILE {{role}}.cfg PATH /usr/local/monit/etc/inc/{{role}}.cfg
+	IF CHANGED SHA1 CHECKSUM
+		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
+
+#服务进程
+CHECK PROCESS {{role}}
+	WITH PIDFILE /var/run/{{role}}.pid
+	EVERY 5 CYCLES
+	START PROGRAM = "/etc/init.d/{{role}} start"
+	STOP PROGRAM  = "/etc/init.d/{{role}} stop"
+	IF CHANGED PID FOR 3 CYCLES THEN RESTART
+	IF CHANGED PID THEN ALERT
+	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR

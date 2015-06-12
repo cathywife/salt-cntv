@@ -1,4 +1,5 @@
 include:
+  - common.baseHosts
   - common.cmdHistoryAudit
   - common.cntvSysCmds
   - common.baseOptimize
@@ -15,12 +16,9 @@ include:
   - common.sudoers
   - common.user
   - common.yumRepo
-  {% set desc = pillar["desc"][0] %}
-  {% if (not desc.startswith("flvSource")) and (not desc.startswith("api.cntv.cn")) %}
-  - common.cntvCms
   - common.openLdap
+  #- common.cntvCms
   #- common.zabbixAgent
-  {% endif %}
 
 /usr/local/cntv/shell:
   file.directory:

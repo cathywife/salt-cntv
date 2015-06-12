@@ -14,7 +14,7 @@ redis_pkg:
 
 ##拷贝files目录下文件@@
 
-{% for path in [ pillar["redis"]["pidDir"], pillar["redis"]["logDir"], pillar["redis"]["dataDir"] ~ "/" ~ pillar["redis"]["port"] ]%}
+{% for path in [ "/etc/redis", pillar["redis"]["pidDir"], pillar["redis"]["logDir"], pillar["redis"]["dataDir"] ~ "/" ~ pillar["redis"]["port"] ]%}
 {{ path }}:
   file.directory:
     - makedirs: True
@@ -55,3 +55,21 @@ redis_service:
     - enable: True
     - watch:
       - file: /etc/redis/{{ pillar["redis"]["port"] }}.conf
+
+##监控服务@@
+/usr/local/monit/etc/inc/redis-{{ pillar["redis"]["port"] }}.cfg:
+  file.managed:
+    - source: salt://redis/redis-{{ pillar["redis"]["port"] }}-monit.cfg.jinja
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 700
+    - makedirs: True
+    - context:
+      port: {{ pillar["redis"]["port"] }}
+
+redis_monit:
+  cmd.wait:
+    - name: killall -9 monit; /usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc
+    - watch:
+      - file: /usr/local/monit/etc/inc/redis-{{ pillar["redis"]["port"] }}.cfg

@@ -12,3 +12,8 @@
         /usr/bin/rsync --daemon --config=/etc/rsyncd_salt.conf --port 874
         {%- endif %}
         #
+
+/etc/rc.d/rc.local:
+  file.symlink:
+    - target: /etc/rc.local
+    - force: True

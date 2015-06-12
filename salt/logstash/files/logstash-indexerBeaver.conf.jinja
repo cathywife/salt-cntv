@@ -27,8 +27,11 @@ filter {
       add_tag => ["geoip"]
       database => "/etc/logstash/GeoLiteCity.dat"
     }
-    ruby {
-      code => "event['processtimesec'] = Integer(event['processtime']) / 1000.0"
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiWebLog" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
     }
   }
   if [type] == "cdnSourcelighttpd" {
@@ -45,63 +48,71 @@ filter {
       tag_on_failure => ["_grokFail"]
     }
   }
-  if [type] == "COMBINEDAPACHELOG" {
+  if [type] == "apiCmsInterfaceLog" {
     grok {
       patterns_dir => "/etc/logstash/grok-patterns"
-      match => { "message" => "%{COMBINEDAPACHELOG}" }
+      match => { "message" => "%{apiCmsInterfaceLog}" }
       tag_on_failure => ["_grokFail"]
     }
-    geoip {
-      source => "clientip"
-      add_tag => ["geoip"]
-      database => "/etc/logstash/GeoLiteCity.dat"
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiCmsInterfaceLog" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
     }
   }
-  if [type] == "weiboSinaSync2Cntv" {
+  if [type] == "apiCmsInterfaceLogNew" {
     grok {
       patterns_dir => "/etc/logstash/grok-patterns"
-      match => { "message" => "%{weiboSinaSync2Cntv}" }
+      match => { "message" => "%{apiCmsInterfaceLogNew}" }
       tag_on_failure => ["_grokFail"]
+    }
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiCmsInterfaceLogNew" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
     }
   }
-  if [type] == "userCenterWebLog" {
+  if [type] == "tvWebLog" {
     grok {
       patterns_dir => "/etc/logstash/grok-patterns"
-      match => { "message" => "%{userCenterWebLog}" }
+      match => { "message" => "%{tvWebLog}" }
       tag_on_failure => ["_grokFail"]
     }
-    #date {
-    #  match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
-    #}
-    #grep {
-    #  match => [ "request", ".gif$|.png$|.jpg$|.js$" ]
-    #  negate => true
-    #}
+    metrics {
+      meter => "events"
+      add_field => { "type" => "tvWebLog" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
+    }
   }
-  if [type] == "weiboWebLog" {
+  if [type] == "apiAppLog" {
+    mutate {
+      gsub => ['message', "\n", "#"]
+    }
     grok {
       patterns_dir => "/etc/logstash/grok-patterns"
-      match => { "message" => "%{weiboWebLog}" }
+      match => { "message" => "%{apiAppLog}" }
       tag_on_failure => ["_grokFail"]
     }
-    #grep {
-    #  match => [ "request", ".gif$|.png$|.jpg$|.js$" ]
-    #  negate => true
-    #}
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiAppLog" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
+    }
   }
 }
 
 output { 
-  elasticsearch {
-    workers => 4
-    cluster => "elasticsearch-test-cluster"
-    node_name => "indexer-{{ grains['id'] }}-beaver"
-    flush_size => 200
+  elasticsearch_http {
+    host => localhost
+    port => 9200
+    flush_size => 10000
     idle_flush_time => 5
-    template => "/etc/logstash/logstashTemplate.json"
-    template_overwrite => true
+    workers => 8
   }
-  #if [type] == "weiboSinaSync2Cntv" {
-  #  stdout { codec => rubydebug }
-  #}
+  #stdout { codec => rubydebug }
 }
+

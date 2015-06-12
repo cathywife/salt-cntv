@@ -23,8 +23,10 @@ base:
     - collectd
     - crontab
     - elasticsearch
+    - hosts
     - ldapAllowGroupsDict
     - logstash
     - myShadow
+    - postfix
     - redis
     - svnServer

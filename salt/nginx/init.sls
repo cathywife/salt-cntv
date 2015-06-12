@@ -49,7 +49,7 @@ nginx_pkg:
       - pkg: nginx_pkg
 {% endfor %}
 
-{% for role in pillar["roles"] if not role == "base" %}
+{% for role in pillar["roles"] if not role.startswith("base") %}
 /etc/nginx/conf.d/{{role}}.conf:
   file.managed:
     - source: salt://nginx/files/conf.d/{{role}}.conf
@@ -75,6 +75,6 @@ service_nginx:
       - pkg: nginx_pkg
       - file: /etc/nginx/nginx.conf
       - file: /etc/nginx/fastcgi_params
-{%- for role in pillar["roles"] if not role == "base" %}
+{%- for role in pillar["roles"] if not role.startswith("base") %}
       - file: /etc/nginx/conf.d/{{role}}.conf
 {%- endfor %}

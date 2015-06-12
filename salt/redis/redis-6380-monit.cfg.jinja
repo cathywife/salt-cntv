@@ -1,0 +1,19 @@
+#自动加载配置文件
+CHECK FILE redis-6380.cfg PATH /usr/local/monit/etc/inc/redis-6380.cfg
+	IF CHANGED SHA1 CHECKSUM
+		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
+
+#服务进程
+CHECK PROCESS redis-6380
+	WITH PIDFILE /var/run/redis/redis-6380.pid
+	EVERY 5 CYCLES
+	START PROGRAM = "/etc/init.d/redis start"
+	STOP PROGRAM  = "/etc/init.d/redis stop"
+	IF MEMORY > 1024 MB FOR 5 CYCLES THEN ALERT
+	IF CHANGED PID FOR 3 CYCLES THEN RESTART
+	IF CHANGED PID THEN ALERT
+	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+	IF FAILED
+		PORT {{ port }}
+		WITH TIMEOUT 2 SECONDS
+		THEN ALERT
