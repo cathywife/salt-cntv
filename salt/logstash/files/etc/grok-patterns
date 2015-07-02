@@ -121,4 +121,4 @@ apiCmsInterfaceLogNew %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NO
 
 tvWebLog %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent} %{QS:realclientip}
 
-apiAppLog Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:%{NOTSPACE:processtime_float:float}秒#Statu:(?:%{NOTSPACE:result}#Type:%{NOTSPACE:apiType}#Service:(?:%{NOTSPACE:service}#|%{NOTSPACE:service})|%{NOTSPACE:result}#|%{NOTSPACE:result})
+apiAppLog Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:%{NOTSPACE:processtime_float:float}秒#Statu:(?:%{WORD:result}#Type:%{GREEDYDATA:apiType}#Service:(?:#|%{WORD:service}#|%{WORD:service})|%{WORD:result}#|%{WORD:result})

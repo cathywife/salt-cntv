@@ -18,9 +18,10 @@ beaver_pkg:
     - names:
       - python26-argparse
       - python26-daemon
-      - python-conf_d
-      - python-glob2
-      - python-beaver
+      - python26-conf_d
+      - python26-glob2
+      - python26-redis
+      - python26-beaver
     - fromrepo: "cntvInternal,epel,CentOS-Base,CentOS-Update"
     - require:
       - user: beaver

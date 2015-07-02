@@ -8,12 +8,13 @@ elasticsearch:
   pkg: "salt://elasticsearch/files/elasticsearch-1.4.4.noarch.rpm"
   plugins: "salt://elasticsearch/files/plugins.tgz"
   dataDir: "/syslog/ESdata"
-  minMem: "ES_MIN_MEM={{ (grains['mem_total'] - 2048 )|int }}m"
-  maxMem: "ES_MAX_MEM={{ (grains['mem_total'] - 2048 )|int }}m"
+  heapMem: "ES_HEAP_SIZE={{ (grains['mem_total'] - 2048 )|int }}m"
   mainConf: |
     cluster.name: elasticsearch-test-cluster
     node.name: node-{{ grains['id'] }}
     node.master: false
+    
+    refresh_interval: 5s
     
     index.number_of_shards: 12
     index.number_of_replicas: 1
@@ -65,8 +66,7 @@ elasticsearch:
   pkg: "salt://elasticsearch/files/elasticsearch-1.4.4.noarch.rpm"
   plugins: "salt://elasticsearch/files/plugins.tgz"
   dataDir: "/syslog/ESdata"
-  minMem: "ES_MIN_MEM={{ (grains['mem_total'] * 0.2)|int }}m"
-  maxMem: "ES_MAX_MEM={{ (grains['mem_total'] * 0.2)|int }}m"
+  heapMem: "ES_HEAP_SIZE={{ (grains['mem_total'] * 0.2)|int }}m"
   mainConf: |
     cluster.name: elasticsearch-test-cluster
     node.name: "node-{{ grains['id'] }}-search"
@@ -114,8 +114,7 @@ elasticsearch:
   pkg: "salt://elasticsearch/files/elasticsearch-1.4.4.noarch.rpm"
   plugins: "salt://elasticsearch/files/plugins.tgz"
   dataDir: "/syslog/ESdata"
-  minMem: "ES_MIN_MEM={{ (grains['mem_total'] * 0.7)|int }}m"
-  maxMem: "ES_MAX_MEM={{ (grains['mem_total'] * 0.7)|int }}m"
+  heapMem: "ES_HEAP_SIZE={{ (grains['mem_total'] * 0.7)|int }}m"
   mainConf: |
     cluster.name: elasticsearch-marvel
     node.name: "node-{{ grains['id'] }}-marvel"
@@ -123,6 +122,8 @@ elasticsearch:
     index.number_of_replicas: 1
     path.data: /syslog/ESdata
     #bootstrap.mlockall: true
+    
+    refresh_interval: 5s
     
     gateway.expected_nodes: 2
     gateway.recover_after_nodes: 1

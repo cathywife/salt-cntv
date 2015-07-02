@@ -80,6 +80,13 @@ beaver:
 {%- for location in grains['location'] %}
       add_field: location, {{location}}
 {%- endfor %}
+      [/data/www/cntv_movie/logs/*/*/*.log]
+      multiline_regex_before: (^LogInfo:)|(^SpendTime:)|(^Statu:)|(^Type:)|(^Service:)|(^$)
+      type: apiAppLog
+      tags: api.cntv.cn-web, cntv_movie
+{%- for location in grains['location'] %}
+      add_field: location, {{location}}
+{%- endfor %}
 {% endif %}
 
 {% if ("cdnSource-img" in grains["roles"]) %}

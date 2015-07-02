@@ -27,6 +27,11 @@ include:
     - mode: 600
     - makedirs: True
 
+/usr/local/monit/etc/inc:
+  file.directory:
+    - makedirs: True
+    - clean: True
+
 /usr/local/monit/etc/inc/system.cfg:
   file.managed:
     - source: salt://common/monit/etc/inc/system.cfg.jinja
@@ -34,7 +39,8 @@ include:
     - user: root
     - group: root
     - mode: 700
-    - makedirs: True
+    - require:
+      - file: /usr/local/monit/etc/inc
 
 monit_start:
   cmd.wait:

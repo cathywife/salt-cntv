@@ -1,5 +1,7 @@
-#防止密码与服务器列表泄露
+#防止敏感信息泄露
 data/saltServersList.csv
+data/pki/master.pem
+data/pki/master.pub
 pillar/myShadow.sls
 pillar/svnServer.sls
 salt/project/cntvSvnServer/httpd/conf.d/svn-vhost.conf

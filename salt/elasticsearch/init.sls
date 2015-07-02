@@ -56,20 +56,14 @@ untar plugins.tgz:
       - file: /usr/share/elasticsearch/plugins.tgz
 
 ##修改配置@@
-ES_MIN_MEM in elasticsearch.in.sh:
+ES_HEAP_SIZE in /etc/sysconfig/elasticsearch:
   file.replace:
-    - name: /usr/share/elasticsearch/bin/elasticsearch.in.sh
-    - pattern: "ES_MIN_MEM=.*$"
-    - repl: "{{ pillar['elasticsearch']['minMem'] }}"
+    - name: /etc/sysconfig/elasticsearch
+    - pattern: "^#?ES_HEAP_SIZE=.*$"
+    - repl: "{{ pillar['elasticsearch']['heapMem'] }}"
     - require:
       - pkg: elasticsearch-pkg
-ES_MAX_MEM in elasticsearch.in.sh:
-  file.replace:
-    - name: /usr/share/elasticsearch/bin/elasticsearch.in.sh
-    - pattern: "ES_MAX_MEM=.*$"
-    - repl: "{{ pillar['elasticsearch']['maxMem'] }}"
-    - require:
-      - pkg: elasticsearch-pkg
+
 /etc/elasticsearch/elasticsearch.yml:
   file.managed:
     - user: root

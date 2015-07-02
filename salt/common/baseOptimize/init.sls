@@ -8,10 +8,9 @@ turnOffSelinux:
     - user: root
 
 /etc/sysconfig/selinux:
-  file.sed:
-    - before: permissive|enforcing
-    - after: disabled
-    - limit: ^SELINUX=
+  file.replace:
+    - pattern: '^SELINUX=.*'
+    - repl: 'SELINUX=disabled'
 
 #文件打开数
 /etc/security/limits.conf:
