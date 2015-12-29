@@ -78,13 +78,16 @@ def main():
 
 	hostsSalt = get_saltAccept()
 	
+	count=0
 	for hostC in hostsCSV:
 		if hostC in hostsSalt:
-			print hostC + "\tPASS"
+			#print hostC + "\tPASS"
+			count = count + 1
 			hostsSalt.remove(hostC)
 		else:
 			print hostC + "\tFAIL"
 	
+	print str(count)+"hosts pass."
 	hostsSalt.remove("")
 
 	for hostDel in hostsSalt:

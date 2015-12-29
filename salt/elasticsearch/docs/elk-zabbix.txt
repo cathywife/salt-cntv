@@ -1,0 +1,72 @@
+curl 'http://10.64.0.1:9200/_sql?pretty&filter_path=aggregations' -d 'select count(desc.raw) FROM logstash-2015.12.02,logstash-2015.12.03
+where @timestamp between now-5m and now and apiType.raw="cms" and result.raw="ERROR"
+group by desc.raw'
+
+curl 'http://10.64.0.1:9200/_sql?pretty&filter_path=aggregations' -d 'select count(desc.raw) FROM logstash-2015.11.30
+where apiType.raw="cms" and result.raw="ERROR"
+group by desc.raw'
+
+
+1.查询tvWebLog类型日志1分钟内的4XX请求：
+
+curl -XGET 'http://10.64.0.1:9200/logstash-'`date +%Y.%m.%d`'/_search?pretty&filter_path=hits.total' -d ' {
+  "size": 0,
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "type:\"tvWebLog\" AND response: [ 400 TO 499 ]",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": '$((`date +%s` - 60))'000,
+                  "lte": '`date +%s`'000
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  },
+  "aggs": {}
+}'
+
+2.查询tvWebLog类型日志1分钟内的5XX请求：
+
+curl -XGET 'http://10.64.0.1:9200/logstash-'`date +%Y.%m.%d`'/_search?pretty&filter_path=hits.total' -d ' {
+  "size": 0,
+  "query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "type:\"tvWebLog\" AND response: [ 500 TO 599 ]",
+          "analyze_wildcard": true
+        }
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "@timestamp": {
+                  "gte": '$((`date +%s` - 60))'000,
+                  "lte": '`date +%s`'000
+                }
+              }
+            }
+          ],
+          "must_not": []
+        }
+      }
+    }
+  },
+  "aggs": {}
+}'

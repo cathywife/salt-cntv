@@ -1,0 +1,24 @@
+cluster.name: elasticsearch-marvel
+node.name: "marvel-{{ grains['id'] }}"
+index.number_of_shards: 4
+index.number_of_replicas: 1
+path.data: /syslog/ESdata
+bootstrap.mlockall: true
+
+refresh_interval: 1s
+
+gateway.expected_nodes: 2
+gateway.recover_after_nodes: 1
+gateway.recover_after_time: 20m
+
+cluster.routing.allocation.node_initial_primaries_recoveries: 2
+cluster.routing.allocation.node_concurrent_recoveries: 2
+indices.recovery.max_bytes_per_sec: 80mb
+indices.recovery.concurrent_streams: 5
+discovery.zen.ping.unicast.hosts: ["10.64.1.223:9300"]
+index.cache.field.max_size: 50000
+index.cache.field.expire: 10m
+index.cache.field.type: soft
+marvel.agent.enabled: false
+
+script.groovy.sandbox.enabled: false

@@ -11,6 +11,9 @@
         {%- if "admin-svnServer" in pillar["roles"] %}
         /usr/bin/rsync --daemon --config=/etc/rsyncd_salt.conf --port 874
         {%- endif %}
+        {%- if "cdh5" in pillar["roles"] %}
+        echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
+        {%- endif %}
         #
 
 /etc/rc.d/rc.local:

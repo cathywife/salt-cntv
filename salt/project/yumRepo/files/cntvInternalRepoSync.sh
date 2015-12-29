@@ -1,12 +1,19 @@
-OS="5 6"
-ARCH="i386 x86_64"
+OS="5 6 linux 7"
+ARCH="x86_64"
 workDir="/repo/cntvInternal"
+#workDir="/repo/cntvInternal /repo/cntvCdh5"
 cwd="/usr/local/cntv/yumSync"
 
-for os in `echo $OS`
+for wd in `echo $workDir`
 do
-  for arch in `echo $ARCH`
+  for os in `echo $OS`
   do
-    createrepo -v -p -d -o $workDir/RPMS/$os/$arch $workDir/RPMS/$os/$arch
+    for arch in `echo $ARCH`
+    do
+      if [ -d $wd/RPMS/$os/$arch ]
+      then
+        createrepo -v -p -d -o $wd/RPMS/$os/$arch $wd/RPMS/$os/$arch
+      fi
+    done
   done
 done

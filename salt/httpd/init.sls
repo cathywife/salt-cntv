@@ -6,7 +6,7 @@
 
 ##软件包安装@@
 redis_pkg:
-  pkg.installed:
+  pkg.latest:
     - name: redis
     - fromrepo: "cntvInternal,epel"
 

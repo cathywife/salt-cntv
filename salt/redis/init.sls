@@ -3,13 +3,13 @@
 ##系统用户@@
 redis:
   user.present:
-    - home: "/var/lib/redis"
     - shell: "/sbin/nologin"
 
 ##软件包安装@@
 redis_pkg:
   pkg.installed:
     - name: redis
+    - version: "2.8.12-1.el6.remi"
     - fromrepo: "cntvInternal,epel"
 
 ##拷贝files目录下文件@@

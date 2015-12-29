@@ -87,27 +87,28 @@ QS %{QUOTEDSTRING}
 
 # Log formats
 SYSLOGBASE %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}:
+#httpd conf: LogFormat "%h %l %u %t \"%r\" %>s %b" common
 COMMONAPACHELOG (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
-COMBINEDAPACHELOG %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent}
+COMBINEDAPACHELOG %{COMMONAPACHELOG} %{QS:referrer} "%{GREEDYDATA:agent}"
 
 
 # Log Levels
 LOGLEVEL ([Aa]lert|ALERT|[Tt]race|TRACE|[Dd]ebug|DEBUG|[Nn]otice|NOTICE|[Ii]nfo|INFO|[Ww]arn?(?:ing)?|WARN?(?:ING)?|[Ee]rr?(?:or)?|ERR?(?:OR)?|[Cc]rit?(?:ical)?|CRIT?(?:ICAL)?|[Ff]atal|FATAL|[Ss]evere|SEVERE|EMERG(?:ENCY)?|[Ee]merg(?:ency)?)
 
 # My Formats
-apiWebLog %{COMBINEDAPACHELOG}(?: %{NUMBER:processtime:int}| -|)
+apiWebLog %{COMBINEDAPACHELOG}(?: %{NUMBER:processtime_int}| -|)
 
-cdnSourcelighttpd (?:%{IPORHOST:clientip}|-) - (?:%{IPORHOST:host}|-) - \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:agent} %{QS:referrer}
+cdnSourcelighttpd (?:%{IPORHOST:clientip}|-) - (?:%{IPORHOST:hostname}|-) - \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "%{GREEDYDATA:agent}" %{QS:referrer}
 
-cdnSourceapache (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{IPORHOST:realclientip}|-)"
+cdnSourceapache (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} "(?:%{IPORHOST:realclientip}|-)"(?: %{IPORHOST:hostname}|)
 
 weiboSinaSync2Cntv %{NOTSPACE:date} %{NOTSPACE:time} %{NOTSPACE:method} %{GREEDYDATA:data}
 
-userCenterWebLog (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{URIPATHPARAM:request}(?: HTTP/%{NUMBER:httpversion})?|-)" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" %{QS:agent} "%{GREEDYDATA:cntv_user_id}" "%{GREEDYDATA:access_key}" "%{GREEDYDATA:realclientip}"
+userCenterWebLog (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{URIPATHPARAM:request}(?: HTTP/%{NUMBER:httpversion})?|-)" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" "%{GREEDYDATA:agent}" "%{GREEDYDATA:cntv_user_id}" "%{GREEDYDATA:access_key}" "%{GREEDYDATA:realclientip}"
 
-weiboWebLog (?:%{IPORHOST:clientip}|-) %{IPORHOST:fwip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} %{QS:agent} %{IPORHOST:hostip} %{NUMBER:loadtime}
+weiboWebLog (?:%{IPORHOST:clientip}|-) %{IPORHOST:fwip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} "%{GREEDYDATA:agent}" %{IPORHOST:hostip} %{NUMBER:loadtime}
 
-mySyslog %{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:syslog_hostip} %{NOTSPACE:syslog_hostname} %{NONNEGINT:syslog_facility} %{NONNEGINT:syslog_pri} #%{GREEDYDATA:syslog_program}# #%{GREEDYDATA:syslog_pid}# %{GREEDYDATA:syslog_message}
+mySyslog %{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:syslog_hostip} %{NOTSPACE:syslog_hostname} %{NONNEGINT:syslog_facility} %{NONNEGINT:syslog_pri} #%{GREEDYDATA:syslog_program}# #%{GREEDYDATA:syslog_pid}#(?: %{GREEDYDATA:syslog_message}|%{GREEDYDATA:syslog_message})
 
 myAuditlog %{IP:audit_clientip}\|%{USERNAME:audit_user}\|%{USERNAME:audit_asuser}\|%{UNIXPATH:audit_path}\|%{BASE10NUM:audit_result}\|%{GREEDYDATA:audit_cmd}
 
@@ -115,10 +116,33 @@ saltLog %{TIMESTAMP_ISO8601:timestamp} \[%{NOTSPACE:salt_facility}\s*\]\[%{NOTSP
 
 openLdapSyslog %{SYSLOGTIMESTAMP:timestamp} (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{SYSLOGPROG}: conn=%{INT:ldap_connID} %{WORD:ldap_opt}=%{INT:ldap_optID} %{WORD:ldap_action}(?: from IP=%{IPORHOST:client}| dn="uid=%{NOTSPACE:ldap_user},ou=%{GREEDYDATA:ldap_user_info}"| base="%{GREEDYDATA:ldap_srch}" %{GREEDYDATA:ldap_srch_opt}| %{GREEDYDATA:ldap_other}|)
 
-apiCmsInterfaceLog %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NOTSPACE:class} - requestIp:%{IPORHOST:clientip} %{NOTSPACE:null} %{NOTSPACE:class} %{IPORHOST:hostip} %{NOTSPACE:null}#requestUrl:%{NOTSPACE:requestUrl}#requestParam:%{NOTSPACE:requestParam}#dataFrom:%{NOTSPACE:dataFrom}#requestTime:(?:%{INT:requestTime:int}ms|)
+apiCmsInterfaceLog %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NOTSPACE:class} - requestIp:%{IPORHOST:clientip} %{NOTSPACE:null} %{NOTSPACE:class} %{IPORHOST:hostip} %{NOTSPACE:null}#requestUrl:%{NOTSPACE:requestUrl}#requestParam:%{NOTSPACE:requestParam}#dataFrom:%{NOTSPACE:dataFrom}#requestTime:(?:%{INT:requestTime}ms|)
 
-apiCmsInterfaceLogNew %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NOTSPACE:class} - requestIp:%{IPORHOST:clientip}#requestUrl:%{NOTSPACE:requestUrl}#requestParam:%{NOTSPACE:requestParam}#dataFrom:%{NOTSPACE:dataFrom}#requestTime:(?:%{INT:requestTime:int}ms|)
+apiCmsInterfaceLogNew %{TIMESTAMP_ISO8601:timestamp}  %{LOGLEVEL :loglevel} %{NOTSPACE:class} - requestIp:%{IPORHOST:clientip}#requestUrl:%{NOTSPACE:requestUrl}#requestParam:%{NOTSPACE:requestParam}#dataFrom:%{NOTSPACE:dataFrom}#requestTime:(?:%{INT:requestTime}ms|)
 
-tvWebLog %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent} %{QS:realclientip}
+tvWebLog (?:%{IPORHOST:clientip1}|-) (?:%{IPORHOST:clientip2}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} "%{GREEDYDATA:agent}" "(?:%{IPORHOST:clientip3}|-)" %{INT:processtime_float}
 
-apiAppLog Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:%{NOTSPACE:processtime_float:float}秒#Statu:(?:%{WORD:result}#Type:%{GREEDYDATA:apiType}#Service:(?:#|%{WORD:service}#|%{WORD:service})|%{WORD:result}#|%{WORD:result})
+tvWebErrorLog \[%{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR}\] \[%{WORD:loglevel1}:%{LOGLEVEL:loglevel2}\] \[pid %{INT:pid}:tid %{INT:tid}\] \[client %{IPORHOST:clientip}:%{INT:clientipPort}\] %{DATA:errorCode}: %{DATA:errormsg}(?:, referer: %{GREEDYDATA:referer}#|#)
+
+apiAppLogFormat1 Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:(?:%{NOTSPACE:processtime_float}秒|访问出现错误，或者已取消运行时间统计)#Statu:%{WORD:result}#Type:%{WORD:apiType}(?:#Service:%{WORD:service}|#Service:)##+
+apiAppLogFormat2 Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:(?:%{NOTSPACE:processtime_float}秒|访问出现错误，或者已取消运行时间统计)#Statu:%{WORD:result}#Type:%{WORD:apiType}##+
+apiAppLogFormat3 Description:\[%{TIMESTAMP_ISO8601:timestamp}\]访问: %{NOTSPACE:request}#LogInfo:%{NOTSPACE:desc}#SpendTime:(?:%{NOTSPACE:processtime_float}秒|访问出现错误，或者已取消运行时间统计)#Statu:%{WORD:result}##+
+
+apiAppLogRequest %{URIPROTO:requestProto}://(?:%{USER:requestUser}(?::[^@]*)?@)?(?:%{URIHOST:requestHost})?(?:%{URIPATH:requestPath}(?:%{URIPARAM:requestParam})?)?
+
+URISPLIT %{URIPATH:URIPATH}(?:%{URIPARAM:URIPARAM})?
+
+TMSproftpdLog ::ffff:%{IPORHOST:clientip} %{NOTSPACE:user} "(?:%{WORD:action} %{DATA:Relative_path}|%{WORD:action})" (?:%{NOTSPACE:dir}|) %{NOTSPACE:file_path} %{NOTSPACE:response} (?:%{NOTSPACE:bytes}|-) \[%{HTTPDATE:timestamp}\]
+
+
+#docker:
+
+NGUSERNAME [a-zA-Z\.\@\-\+_%]+
+NGUSER %{NGUSERNAME}
+
+dockerNginxLog %{IPORHOST:clientip} %{NGUSER:ident} %{NGUSER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) (?:"(?:%{URI:referrer}|-)"|%{QS:referrer}) "%{GREEDYDATA:agent}" "(?:%{IPORHOST:clientip2}|-)" %{BASE16FLOAT:processtime_float}
+
+dockerHttpdLog 
+(?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} "%{GREEDYDATA:agent}" (?:%{IPORHOST:clientip2}|-)(?: %{INT:processtime_int}|)
+
+dockerTomcatLog (?:%{IPORHOST:clientip}|-) %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} "%{GREEDYDATA:agent}" (?:%{IPORHOST:clientip2}|-)(?: %{INT:processtime_int}|)

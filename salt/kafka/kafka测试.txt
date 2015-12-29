@@ -1,0 +1,56 @@
+/etc/init.d/monit stop
+/etc/init.d/kafka stop
+/etc/init.d/zookeeper stop
+
+
+rm -rf /data/zookeeper/version*
+rm -rf /data/kafka/* /data/kafka/.*
+rm -rf /usr/local/kafka/logs/* /usr/local/zookeeper/logs/*
+
+
+/etc/init.d/zookeeper start
+sleep 5
+/usr/local/zookeeper/bin/zkServer.sh status
+sleep 15
+iptables -I INPUT -p tcp --dport 9092 -j DROP
+/etc/init.d/kafka restart
+sleep 5
+iptables -D INPUT -p tcp --dport 9092 -j DROP
+ps -ef |grep zookeeper
+
+/etc/init.d/logstash-indexerKafka restart
+/etc/init.d/logstash-indexerSyslog restart
+/etc/init.d/monit start
+
+
+
+
+
+
+
+
+
+
+
+chattr -i /etc/passwd /etc/shadow /etc/group /etc/gshadow;
+
+
+vi /usr/local/kafka_2.10-0.8.2.2/config/server.properties
+su kafka
+/usr/local/kafka_2.10-0.8.2.2/bin/kafka-server-start.sh /usr/local/kafka_2.10-0.8.2.2/config/server.properties
+
+/etc/init.d/kafka restart
+sleep 3
+ps -ef |grep kafka
+
+
+测试：
+1.	清空，root命令启动					OK
+2.	清空，kafka用户启动					FAILED
+3.1.	清空，更改数据目录/data/kafka/v1，kafka用户启动		OK
+3.2.	清空，kafka用户启动					OK
+3.3.	清空，root用户启动					OK
+3.4.	清空，kafka用户启动					OK
+3.5.	启动中删除数据，清空，kafka用户启动			OK
+4.	清空，更改数据目录/data/kafka/v1，服务启动		OK
+4.1.	清空，服务启动						OK

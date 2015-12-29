@@ -1,0 +1,12 @@
+tickTime=2000
+dataDir=/data/zookeeper
+clientPort=2181
+initLimit=5
+syncLimit=2
+{%- if pillar['roles'] is iterable %}
+{%- if "kafka-zk" in pillar["roles"] %}
+server.1=10.64.0.1:2888:3888
+server.2=10.64.0.2:2888:3888
+server.3=10.64.0.3:2888:3888
+{%- endif %}
+{%- endif %}

@@ -1,0 +1,63 @@
+cluster.name: es-cntv-cluster
+node.name: data-{{ grains['id'] }}
+node.master: false
+node.box_type: P10
+
+#公布给群集的主机名，与unicat_hosts对应，可以有多个
+network.publish_host: {{ grains['id'] }}
+#绑定服务的主机名，只能有一个
+network.bind_host: 0.0.0.0
+http.enabled: false
+transport.tcp.port: {{esPort}}
+
+refresh_interval: 5s
+
+index.number_of_shards: 12
+index.number_of_replicas: 1
+path.data: {{dataDir}}
+path.repo: ["/backup"]
+bootstrap.mlockall: true
+
+#gateway.recover_after_nodes: 4
+#gateway.recover_after_time: 60m
+#gateway.expected_nodes: 9
+
+# 1. During the initial recovery
+cluster.routing.allocation.node_initial_primaries_recoveries: 18
+# 2. During adding/removing nodes, rebalancing, etc
+cluster.routing.allocation.node_concurrent_recoveries: 4
+indices.recovery.concurrent_streams: 5
+indices.recovery.max_bytes_per_sec: 15mb
+
+cluster.routing.allocation.cluster_concurrent_rebalance: 2
+cluster.routing.allocation.disk.threshold_enabled: true
+cluster.routing.allocation.disk.watermark.low: 90%
+cluster.routing.allocation.disk.watermark.high: 95%
+
+indices.memory.index_buffer_size: 80%
+indices.fielddata.cache.size: 20%
+
+discovery.zen.ping.timeout: 30s
+#discovery.zen.minimum_master_nodes: 2
+discovery.zen.ping.multicast.enabled: false
+discovery.zen.ping.unicast.hosts: ["10.70.32.100:9300","10.70.32.105:9300","10.70.32.100:9310","10.70.32.105:9310"]
+
+index.cache.field.max_size: 50000
+index.cache.field.expire: 10m
+index.cache.field.type: soft
+
+#marvel.agent.exporter.es.hosts: ["logstash-esMonitorNode-1:9200"]
+index.translog.flush_threshold_ops: 50000
+
+# Search thread pool
+threadpool.search.type: fixed
+threadpool.search.size: {{ grains['num_cpus'] * 3 }}
+threadpool.search.queue_size: 100
+
+# Index thread pool
+threadpool.index.type: fixed
+threadpool.index.size: {{ grains['num_cpus'] * 3 }}
+threadpool.index.queue_size: 200
+
+action.disable_delete_all_indices: true
+script.groovy.sandbox.enabled: false

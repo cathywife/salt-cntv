@@ -2,7 +2,7 @@
 
 ##软件包安装@@
 svnServer_pkg:
-  pkg.installed:
+  pkg.latest:
     - names:
       - httpd
       - httpd-devel

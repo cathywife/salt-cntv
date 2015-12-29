@@ -1,0 +1,24 @@
+#自动加载配置文件
+CHECK FILE elasticsearch2-{{role}}-monit.cfg PATH /usr/local/monit/etc/inc/elasticsearch2-{{role}}-monit.cfg
+	IF CHANGED SHA1 CHECKSUM
+		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
+
+#服务进程
+CHECK PROCESS elasticsearch2-{{role}}
+	WITH PIDFILE /var/run/elasticsearch/elasticsearch-{{role}}.pid
+	START PROGRAM = "/etc/init.d/{{role}} start"
+	STOP PROGRAM  = "/etc/init.d/{{role}} stop;"
+	IF CHANGED PID FOR 5 CYCLES THEN RESTART
+	IF CHANGED PID THEN ALERT
+	IF 6 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR
+{%- if role == "es2-test-client" %}
+	IF FAILED
+		PORT 9200
+		PROTOCOL HTTP
+		WITH TIMEOUT 2 SECONDS
+		THEN ALERT
+{%- endif %}
+	IF FAILED
+		PORT {{esPort}}
+		WITH TIMEOUT 2 SECONDS
+		THEN ALERT

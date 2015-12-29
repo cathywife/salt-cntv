@@ -2,7 +2,7 @@
 
 ##软件包安装@@
 collectd_pkg:
-  pkg.installed:
+  pkg.latest:
     - name: collectd
 
 ##修改配置@@

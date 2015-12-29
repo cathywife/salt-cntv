@@ -9,7 +9,7 @@
     - makedirs: True
 
 hardwareTesting_pkg:
-  pkg.installed:
+  pkg.latest:
     - names:
       - gcc
       - libaio-devel

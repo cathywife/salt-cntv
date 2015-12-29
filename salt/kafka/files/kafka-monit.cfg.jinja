@@ -1,0 +1,13 @@
+#自动加载配置文件
+CHECK FILE kafka.cfg PATH /usr/local/monit/etc/inc/kafka.cfg
+	IF CHANGED SHA1 CHECKSUM
+		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
+
+#服务进程
+CHECK PROCESS kafka
+	WITH PIDFILE /var/run/kafka.pid
+	START PROGRAM = "/etc/init.d/kafka start"
+	STOP PROGRAM  = "/etc/init.d/kafka stop"
+	IF CHANGED PID FOR 5 CYCLES THEN RESTART
+	IF CHANGED PID THEN ALERT
+	IF 6 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR

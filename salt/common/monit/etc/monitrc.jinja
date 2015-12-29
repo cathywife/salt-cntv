@@ -1,8 +1,9 @@
 #检测周期
 set daemon 10
 
-#LOG文件
+set idfile /usr/local/monit/.monit.id
 set logfile /var/log/monit.log
+set statefile /tmp/.monit.state
 
 #mmonit
 set mmonit http://monit:monit@centralControl:8000/collector

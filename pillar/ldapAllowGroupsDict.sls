@@ -1,6 +1,6 @@
 ldapAllowGroupsDict:
   ops:
-    - (cn=operations)
-    - (cn=outsourcingOps)
+    - cn=Role-operations
   dev:
-    - (cn=development)
+    - cn=Role-operations
+    - cn=Role-develop

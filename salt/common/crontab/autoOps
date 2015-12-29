@@ -3,4 +3,4 @@
 #操作审计日志防删除
 0 0 * * * sudo /usr/local/cntv/sys_changeAuditLogPerm.sh
 #系统进程守护
-* * * * * sudo /usr/local/cntv/sys_watchMonit.sh
+#* * * * * sudo /usr/local/cntv/sys_watchMonit.sh

@@ -2,7 +2,7 @@
 
 ##软件包安装@@
 nginx_pkg:
-  pkg.installed:
+  pkg.latest:
     - name: nginx
 
 ##创建并设置目录权限@@
@@ -49,7 +49,8 @@ nginx_pkg:
       - pkg: nginx_pkg
 {% endfor %}
 
-{% for role in pillar["roles"] if not role.startswith("base") %}
+# for role in pillar["roles"] if not role.startswith("base") 
+{% for role in "pypiReverseproxy", "yumRepo" %}
 /etc/nginx/conf.d/{{role}}.conf:
   file.managed:
     - source: salt://nginx/files/conf.d/{{role}}.conf
@@ -75,6 +76,6 @@ service_nginx:
       - pkg: nginx_pkg
       - file: /etc/nginx/nginx.conf
       - file: /etc/nginx/fastcgi_params
-{%- for role in pillar["roles"] if not role.startswith("base") %}
+{%- for role in "pypiReverseproxy", "yumRepo" %}
       - file: /etc/nginx/conf.d/{{role}}.conf
 {%- endfor %}

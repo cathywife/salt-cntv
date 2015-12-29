@@ -11,9 +11,9 @@ logstash:
     initConf: |
       JAVACMD=/usr/bin/java
       LS_HOME=/var/lib/logstash
-      LS_HEAP_SIZE="{{(grains['mem_total']*0.2)|round|int}}m"
+      LS_HEAP_SIZE="{{(grains['mem_total']*0.1)|round|int}}m"
       #LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.2)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.1)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
       LS_WORKER_THREADS=2
       #LS_PIDFILE=/var/run/logstash.pid
       #LS_USER=logstash
@@ -32,15 +32,49 @@ logstash:
     initConf: |
       JAVACMD=/usr/bin/java
       LS_HOME=/var/lib/logstash
-      LS_HEAP_SIZE="{{(grains['mem_total']*0.3)|round|int}}m"
+      LS_HEAP_SIZE="{{(grains['mem_total']*0.1)|round|int}}m"
       #LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
-      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.3)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
-      LS_WORKER_THREADS=8
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.1)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_WORKER_THREADS=4
       #LS_PIDFILE=/var/run/logstash.pid
       #LS_USER=logstash
       #LS_LOG_FILE=/var/log/logstash/logstash-web.log
       #LS_USE_GC_LOGGING="true"
       LS_CONF_DIR=/etc/logstash/logstash-indexerBeaver.conf
+      LS_OPEN_FILES=65535
+      LS_NICE=0
+{% endif %}
+
+{% if 'logstash-indexerKafka' in grains['roles'] %}
+  logstash-indexerKafka:
+    initConf: |
+      JAVACMD=/usr/bin/java
+      LS_HOME=/var/lib/logstash
+      LS_HEAP_SIZE="{{(grains['mem_total']*0.1)|round|int}}m"
+      #LS_JAVA_OPTS="-Djava.io.tmpdir=${LS_HOME}"
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.1)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_WORKER_THREADS=4
+      #LS_PIDFILE=/var/run/logstash.pid
+      #LS_USER=logstash
+      #LS_LOG_FILE=/var/log/logstash/logstash-web.log
+      #LS_USE_GC_LOGGING="true"
+      LS_CONF_DIR=/etc/logstash/logstash-indexerKafka.conf
+      LS_OPEN_FILES=65535
+      LS_NICE=0
+{% endif %}
+
+{% if 'logstash-indexerPacketbeat' in grains['roles'] %}
+  logstash-indexerPacketbeat:
+    redisIp: "10.64.0.1"
+    redisPort: "6380"
+    redisKey: "packetbeat"
+    initConf: |
+      JAVACMD=/usr/bin/java
+      LS_HOME=/var/lib/logstash
+      LS_HEAP_SIZE="{{(grains['mem_total']*0.1)|round|int}}m"
+      LS_JAVA_OPTS="-Xms{{(grains['mem_total']*0.1)|round|int}}m -Djava.io.tmpdir=${LS_HOME}"
+      LS_WORKER_THREADS=4
+      LS_CONF_DIR=/etc/logstash/logstash-indexerPacketbeat.conf
       LS_OPEN_FILES=65535
       LS_NICE=0
 {% endif %}

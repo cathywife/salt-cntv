@@ -5,7 +5,7 @@ allowGroups="|
 {%- for group in pillar['ldapAllowGroups'] %}
 {%- set names = pillar["ldapAllowGroupsDict"][group] %}
 {%- for name in names %}
-{{- name -}}
+({{- name -}})
 {%- endfor %}
 {%- endfor %}
 {%- endif -%}
@@ -13,14 +13,8 @@ allowGroups="|
 
 uri="ldap://ldap2.ops.cntv.priv ldap://ldap1.ops.cntv.priv"
 baseDN="dc=ops,dc=cntv,dc=priv"
-rpmFile="/usr/local/cntv/pkg/nss-pam-ldapd-0.8.13.x86_64.rpm"
-
-chattr -i /etc/passwd /etc/shadow /etc/group /etc/gshadow
 
 killall -9 nslcd
-
-yum remove -y sssd oddjobd
-rpm -Uvh --force $rpmFile
 
 authconfig --enableshadow --enablelocauthorize --enableldap --enableldapauth \
 --ldapserver="$uri" --ldapbasedn="$baseDN" \
@@ -49,8 +43,7 @@ tls_reqcert never
 " > /etc/openldap/ldap.conf
 
 /sbin/nslcd
+
 grep "/sbin/nslcd" /etc/rc.local || echo "/sbin/nslcd" >> /etc/rc.local
 
 getent passwd |grep ldapguest && echo "成功！" || { echo "失败！"; exit 1; }
-
-#chattr +i /etc/passwd /etc/shadow /etc/group /etc/gshadow

@@ -1,3 +1,9 @@
+{% if grains['osmajorrelease'] != "7" %}
+{% set service = "/sbin/service" %}
+{% else %}
+{% set service = "/usr/sbin/service" %}
+{% endif %}
+
 #自动加载配置文件
 check file system.cfg path /usr/local/monit/etc/inc/system.cfg
 	group system
@@ -23,20 +29,30 @@ check system {{ grains['id'] }}
 #磁盘空间
 check filesystem root with path /
 	group system
-	if space usage > 95% then alert
+	if space usage > 90% then alert
+
+check filesystem usr with path /usr
+	group system
+	if space usage > 80% then alert
 
 check filesystem var with path /var
 	group system
-	if space usage > 95% then alert
+	if space usage > 90% then alert
 {%- else %}
 	if memory usage > 98% then alert
+{%- if ("flvSource" not in pillar["roles"]) %}
 	if swap usage > 25% then alert
+{%- endif %}
 	if cpu usage (user) > 80% for 3 cycles then alert
 	if cpu usage (system) > 80% for 3 cycles then alert
 	if cpu usage (wait) > 80% for 3 cycles then alert
 
 #磁盘空间
 check filesystem root with path /
+	group system
+	if space usage > 80% then alert
+
+check filesystem usr with path /usr
 	group system
 	if space usage > 80% then alert
 
@@ -49,47 +65,47 @@ check filesystem var with path /var
 #服务进程
 check process sshd with pidfile /var/run/sshd.pid
 	group system
-	start program = "/etc/init.d/sshd start"
-	stop program  = "/etc/init.d/sshd stop"
-	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+	start program = "{{service}} sshd start"
+	stop program  = "{{service}} sshd stop"
+	IF 5 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR
 
 check process crond with pidfile /var/run/crond.pid
 	group system
-	start program = "/etc/init.d/crond start"
-	stop  program = "/etc/init.d/crond stop; /usr/bin/killall crond"
-	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+	start program = "{{service}} crond start"
+	stop  program = "{{service}} crond stop; /usr/bin/killall crond"
+	IF 5 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR
 
-check process rsyslog with pidfile /var/run/rsyslogd.pid
+check process rsyslog with pidfile /var/run/syslogd.pid
 	group system
-	start program = "/etc/init.d/rsyslog start"
-	stop  program = "/etc/init.d/rsyslog stop; /usr/bin/killall rsyslogd"
-	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+	start program = "{{service}} rsyslog start"
+	stop  program = "{{service}} rsyslog stop; /usr/bin/killall rsyslogd"
+	IF 5 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR
 
 {%- if pillar["roles"] is iterable %}
 {%- if "baseA" in pillar["roles"] %}
-check process nslcd with pidfile /var/run/nslcd/nslcd.pid
-	group system
-	start program = "/sbin/nslcd"
-	stop program  = "/usr/bin/killall nslcd"
+#check process nslcd with pidfile /var/run/nslcd/nslcd.pid
+#	group system
+#	start program = "/sbin/nslcd"
+#	stop program  = "/usr/bin/killall nslcd"
 
-check process cntvCMS with pidfile /var/run/rsyncd_cntvCms.pid
-	group system
-	start program = "/usr/bin/rsyncCntvCms --daemon --config=/etc/cntvCms/rsyncd.conf --port 7878"
-	stop  program = "/usr/bin/killall rsyncCntvCms"
-	if failed port 7878 then restart
-	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+#check process cntvCMS with pidfile /var/run/rsyncd_cntvCms.pid
+#	group system
+#	start program = "/usr/bin/rsyncCntvCms --daemon --config=/etc/cntvCms/rsyncd.conf --port 7878"
+#	stop  program = "/usr/bin/killall rsyncCntvCms"
+#	if failed port 7878 then restart
+#	IF 5 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR
 {%- endif %}
 {%- endif %}
 
 #check process snmpd with pidfile /var/run/snmpd
-#	start program = "/etc/init.d/snmpd start"
-#	stop program  = "/etc/init.d/snmpd stop"
+#	start program = "{{service}} snmpd start"
+#	stop program  = "{{service}} snmpd stop"
 #	if failed host 192.168.1.1 port 161 type udp then restart
 #	if failed host 192.168.1.1 port 199 type tcp then restart
 #	if 5 restarts within 5 cycles then timeout
 
 #check process xinetd with pidfile /var/run/xinetd.pid 
 #	group system
-#	start program = "/etc/init.d/xinetd start"
-#	stop  program = "/etc/init.d/xinetd stop"
+#	start program = "{{service}} xinetd start"
+#	stop  program = "{{service}} xinetd stop"
 #	if 5 restarts within 5 cycles then timeout

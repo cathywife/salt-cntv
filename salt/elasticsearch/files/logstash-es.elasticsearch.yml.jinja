@@ -1,0 +1,149 @@
+####基本配置
+
+#群集名称
+cluster.name: elasticsearch-test-cluster
+
+{%- if (role == "logstash-esSearchNode") %}
+#节点名称
+node.name: client-{{ grains['id'] }}
+#是否是主节点
+node.master: true
+#是否是数据节点
+node.data: false
+#节点类型
+#node.box_type: P10
+#是否开始http服务、端口
+http.enabled: true
+http.port : 9200
+{%- elif (role == "logstash-esNode-P10") %}
+#节点名称
+node.name: data-{{ grains['id'] }}
+#是否是主节点
+node.master: false
+#是否是数据节点
+node.data: true
+#节点类型
+node.box_type: P10
+#是否开始http服务、端口
+http.enabled: false
+{%- endif %}
+
+#公布给群集的主机名，与unicat_hosts对应，可以有多个
+network.publish_host: {{ grains['id'] }}
+#绑定服务的主机名，只能有一个
+network.bind_host: 0.0.0.0
+#es协议端口
+transport.tcp.port: {{esPort}}
+#默认分片数，最佳实践：分片大小在30GB为宜
+index.number_of_shards: 12
+#默认副本数
+index.number_of_replicas: 1
+#存放路径
+path.data: {{dataDir}}
+#备份源路径，该路径要能被所有datanode读写
+path.repo: ["/backup"]
+
+####性能
+
+#刷新间隔
+refresh_interval: 5s
+#锁定全部内存，保证es使用的内存不进swap
+bootstrap.mlockall: true
+
+{%- if (role == "logstash-esSearchNode") %}
+#使用多少内存为索引使用
+indices.memory.index_buffer_size: 10%
+#使用多少内存存储fielddata，搜索使用
+indices.fielddata.cache.size: 60%
+{%- elif (role == "logstash-esNode-P10") %}
+#使用多少内存为索引使用
+indices.memory.index_buffer_size: 50%
+#使用多少内存存储fielddata，搜索使用
+indices.fielddata.cache.size: 30%
+{%- endif %}
+
+#搜索数据过期时间
+indices.fielddata.cache.expire: 90m
+#数据达到多大时触发flush
+index.translog.flush_threshold_size: 256mb
+#搜索线程池
+threadpool.search.type: fixed
+threadpool.search.size: {{ ( ( ( grains['num_cpus'] * 3 ) / 2 ) + 1 ) | int }}
+threadpool.search.queue_size: 1000
+#索引线程池
+threadpool.index.type: fixed
+threadpool.index.size: {{ ( grains['num_cpus'] * 3 ) | int }}
+threadpool.index.queue_size: 2000
+#bluk批量线程池
+threadpool.bulk.type: fixed
+threadpool.bulk.size: {{ ( grains['num_cpus'] * 3 ) | int }}
+threadpool.bulk.queue_size: 3000
+
+#### 恢复，直到es重启才会生效
+
+#满足这些条件之一，则立即开始恢复
+gateway.expected_nodes: 0
+gateway.expected_master_nodes: 0
+gateway.expected_data_nodes: 0
+#如果上面的条件未，则满足等待一段时间
+gateway.recover_after_time: 20m
+#直到下面的条件如果都满足，则开始恢复
+#gateway.recover_after_nodes: 0
+gateway.recover_after_master_nodes: 2
+gateway.recover_after_data_nodes: 3
+
+#有多少个shared可以同时rebalance 默认：2 #影响性能
+cluster.routing.allocation.cluster_concurrent_rebalance: 4
+#每个节点内部初始恢复的主分片数量 默认：4 #影响性能
+cluster.routing.allocation.node_initial_primaries_recoveries: 20
+#每个节点之间同时恢复的分片数量 默认：2 #影响性能
+cluster.routing.allocation.node_concurrent_recoveries: 6
+#每个节点之间恢复时启动的数据流 默认：3
+indices.recovery.concurrent_streams: 5
+#每个节点之间恢复时启动的小文件数据流 默认：2
+#indices.recovery.concurrent_small_file_streams: 2
+#每个节点恢复时的速度限制 #严重影响性能
+indices.recovery.max_bytes_per_sec: 80mb
+
+#什么情况下可以rebalance：always, indices_primaries_active, and indices_all_active 默认：indices_all_active #影响性能
+cluster.routing.allocation.allow_rebalance: indices_primaries_active
+#禁止在同一节点的多个实例之间迁移 默认：false #影响性能
+cluster.routing.allocation.same_shard.host: true
+
+#### 磁盘阀值
+
+#磁盘到达阀值时启动下面的策略
+cluster.routing.allocation.disk.threshold_enabled: true
+#到达该值时，停止在此节点创建新的分片
+cluster.routing.allocation.disk.watermark.low: 90%
+#到达该值时，开始迁移分片到其他节点
+cluster.routing.allocation.disk.watermark.high: 95%
+#群集信息刷新时间
+cluster.info.update.interval: "60s"
+
+#### 网络
+
+#关闭多播
+discovery.zen.ping.multicast.enabled: false
+#群集中最少的主节点数量，少于此数值无法推选master
+discovery.zen.minimum_master_nodes: 2
+#网络发现参数，超时、间隔、重试次数
+discovery.zen.ping.timeout: 90s
+discovery.zen.ping.ping_interval: 10s
+discovery.zen.ping.ping_retries: 10
+#网络发现主机列表(随便写几台就行，grossip协议)
+discovery.zen.ping.unicast.hosts: ["10.64.0.1:9300","10.64.0.2:9300", "10.64.0.3:9300"]
+#marvel监控地址列表
+marvel.agent.exporter.es.hosts: ["10.64.1.223:9200"]
+
+#### 安全
+#禁止删除所有索引
+action.disable_delete_all_indices: true
+#禁止动态脚本
+script.groovy.sandbox.enabled: false
+
+{%- if (role == "logstash-esSearchNode") %}
+# kibana
+http.cors.enabled: true
+http.cors.allow-origin: /https?:\/\/10.64.0.1.*/
+{%- endif %}

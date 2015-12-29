@@ -1,0 +1,138 @@
+[beaver]
+logstash_version: 1
+hostname: {{ grains["id"] }}
+ignore_old_files: 3
+
+transport: kafka
+kafka_client_id: beaver-kafka-{{ grains["id"] }}
+kafka_hosts: 10.64.0.1:9092,10.64.0.2:9092,10.64.0.3:9092
+{%- if ("syslogCenter" in grains["roles"]) or ("openLDAP-slave" in grains["roles"]) %}
+kafka_topic: logstash-topic-syslog
+{%- else %}
+kafka_topic: logstash-topic
+{%- endif %}
+
+{%- if "openLDAP-slave" in grains["roles"] %}
+
+[/var/log/ldap.log]
+type: openLdapSyslog
+tags: openLdapSyslog
+{%- endif %}
+{%- if "syslogCenter" in grains["roles"] %}
+
+[/var/log/rsyslog/messages.log]
+type: mySyslog
+tags: syslog
+{%- endif %}
+{%- if "api.cntv.cn-web" in grains["roles"] %}
+
+[/usr/local/apache2/logs/*-access_log_*]
+type: apiWebLog
+tags: api.cntv.cn-web
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+
+[/data/www/cntv_api/logs/*/*/*.log]
+multiline_regex_before: (^LogInfo:)|(^SpendTime:)|(^Statu:)|(^Type:)|(^Service:)|(^$)
+type: apiAppLog
+tags: api.cntv.cn-web, cntv_api
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+
+[/data/www/cntv_hot/logs/*/*/*.log]
+multiline_regex_before: (^LogInfo:)|(^SpendTime:)|(^Statu:)|(^Type:)|(^Service:)|(^$)
+type: apiAppLog
+tags: api.cntv.cn-web, cntv_hot
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+
+[/data/www/cntv_movie/logs/*/*/*.log]
+multiline_regex_before: (^LogInfo:)|(^SpendTime:)|(^Statu:)|(^Type:)|(^Service:)|(^$)
+type: apiAppLog
+tags: api.cntv.cn-web, cntv_movie
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+{%- endif %}
+{%- if ("cdnSource-img" in grains["roles"]) %}
+
+[/export/home/webserver/lighttpdlogs/*_access.log]
+type: cdnSourcelighttpd
+tags: cdnSource-img
+{%- if grains['location'] is iterable %}
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if ("cdnSource-page" in grains["roles"]) %}
+
+[/export/home/webserver/apachelogs/*-access_log]
+type: cdnSourceapache
+tags: cdnSource-page
+{%- if grains['location'] is iterable %}
+
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if ("apiCmsInterface-L1" in grains["roles"]) %}
+
+[/usr/local/newsapp/tomcat/xinwenlogs/xinwenSkip.log]
+type: apiCmsInterfaceLog
+tags: apiCmsInterface-L1
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+
+[/usr/local/newsapp/tomcat/xinwenlogs/xinwenJianKong.log]
+type: apiCmsInterfaceLogNew
+tags: apiCmsInterface-L1
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+{%- endif %}
+{%- if ("tv.cntv.cn-web" in grains["roles"]) %}
+
+[/usr/local/apache2/logs/*-access_log_*]
+type: tvWebLog
+tags: tv.cntv.cn-web
+{%- for location in grains['location'] %}
+add_field: location, {{location}}
+{%- endfor %}
+#[/usr/local/apache2/logs/*-error_log]
+#type: tvWebErrorLog
+#tags: tv.cntv.cn-web
+#{%- for location in grains['location'] %}
+#add_field: location, {{location}}
+#{%- endfor %}
+{%- endif %}
+{%- if ("flvSource" in grains["roles"]) and ("flvSource-thirdParty" in grains["roles"]) %}
+
+[/export/home/webserver/nginxlogs/*_access.log]
+type: COMBINEDAPACHELOG
+tags: flvSource,flvSource-thirdParty
+{% elif ("flvSource" in grains["roles"]) %}
+
+[/export/home/webserver/nginxlogs/*_access.log]
+type: COMBINEDAPACHELOG
+tags: flvSource
+{%- endif %}
+{%- if "saltMaster" in grains["roles"] %}
+
+[/var/log/salt/master]
+multiline_regex_after: (^\s+File.*, line \d+, in)
+multiline_regex_before: (^Traceback \(most recent call last\):)|(^\s+File.*, line \d+, in)|(^\w+Error: )|(^UnicodeDecodeError: )
+type: saltLog
+tags: saltLog, saltLogMaster
+{%- endif %}
+{%- if "logstash-esSearchNode" in grains["roles"] %}
+
+[/var/log/httpd/kibana-access_log]
+type: COMMONAPACHELOG
+tags: kibanaAccess
+{%- endif %}

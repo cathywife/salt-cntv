@@ -5,7 +5,10 @@ $roleList=array();
 $file = fopen('saltServersList.csv','r'); 
 while ($data = fgetcsv($file))
 {
-	$hosts[] = $data;
+	if (strpos($data[0], "#") !== 0 )
+	{
+		$hosts[] = $data;
+	}
 }
 
 foreach ($hosts as $arr)
@@ -45,7 +48,10 @@ if (isset($_REQUEST["ip"]))
 }
 else if (isset($_REQUEST["role"]))
 {
-	echo implode("\n",$roleList[$_REQUEST["role"]]);
+	if (isset($roleList))
+	{
+		echo implode("\n",$roleList[$_REQUEST["role"]]);
+	}
 }
 else
 {

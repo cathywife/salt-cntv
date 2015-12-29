@@ -1,0 +1,16 @@
+master: saltMaster
+master_port: 4606
+
+id: {{ grains['id'] }}
+
+pki_dir: /etc/salt-cntv/pki
+cachedir: /var/cache/salt-cntv
+sock_dir: /var/run/salt/minion-cntv
+log_file: /var/log/salt/minion-cntv
+pidfile: /var/run/salt-minion-cntv.pid
+
+log_level: info
+
+dns_check: false
+
+backup_mode: minion

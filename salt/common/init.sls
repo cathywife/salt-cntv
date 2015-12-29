@@ -1,5 +1,6 @@
 include:
   - common.baseHosts
+  - common.basePkgs
   - common.cmdHistoryAudit
   - common.cntvSysCmds
   - common.baseOptimize
@@ -12,11 +13,11 @@ include:
   - common.rsync
   - common.rsyslog
   - common.sshd
-  - common.salt-minion
+  - common.sshd-key
+  - common.salt-minion-cntv
   - common.sudoers
-  - common.user
   - common.yumRepo
-  - common.openLdap
+  #- common.openLdap
   #- common.cntvCms
   #- common.zabbixAgent
 
@@ -34,27 +35,16 @@ include:
     - dir_mode: 644
     - makedirs: True
 
-common_pkgs:
-  pkg.installed:
-    - names:
-{% if grains['os_family'] == "RedHat" %}
-      - rsync
-      - wget
-      - gcc
-      - make
-{% endif %}
-    - require:
-      - file: /etc/yum.repos.d/cntvInternal.repo
-
 #用户安全
 unlockPasswd:
   cmd.run:
     - name: chattr -i /etc/passwd /etc/shadow /etc/group /etc/gshadow
     - user: root
+    - onlyif: 'lsattr /etc/passwd |grep "i"'
     - order: 1
 
-lockPasswd:
-  cmd.run:
-    - name: chattr +i /etc/passwd /etc/shadow /etc/group /etc/gshadow
-    - user: root
-    - order: last
+#lockPasswd:
+#  cmd.run:
+#    - name: chattr +i /etc/passwd /etc/shadow /etc/group /etc/gshadow
+#    - user: root
+#    - order: last

@@ -28,6 +28,20 @@ function convf()
 	done
 }
 
+function makeList()
+{
+	rm -f ./lists/*.role.list
+	cat $file |grep -v "^#\|^#" |awk -F, '{print $3}' |sed 's/;/\n/g' |sort |uniq |grep -v "^$" |while read role
+	do
+		#echo $role
+		> ./lists/$role.role.list
+		cat $file |grep -v "^#\|^#" |awk -F, '{print $1" "$3}'|grep "${role};\|${role}$" |while read ip roles
+		do
+			echo $ip >> ./lists/$role.role.list
+		done
+	done
+}
+
 for i in `seq 2 50`
 do
 	item=`cat $file |head -n 1 |awk -F, '{print $'$i'}'`
@@ -39,3 +53,4 @@ do
 	convf $item $i > ../pillar/.${item}.sls.tmp
 	mv ../pillar/.${item}.sls.tmp ../pillar/${item}.sls
 done
+makeList

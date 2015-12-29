@@ -1,0 +1,219 @@
+#http://elasticsearch-users.115913.n3.nabble.com/write-throughput-test-on-elasticsearch-9-high-configuration-nodes-cluster-td4033887.html
+
+input {
+  kafka {
+    zk_connect => '10.64.0.1:2181,10.64.0.2:2181,10.64.0.3:2181'
+    group_id => 'logstash'
+    topic_id => 'logstash-topic'
+    consumer_id => 'logstash-consumer-{{ grains["id"] }}'
+    consumer_threads => 1
+    #consumer_timeout_ms => 10000
+    #consumer_restart_sleep_ms => 5000
+    queue_size => 200
+    codec => 'json'
+  }
+}
+
+filter {
+  #ruby {
+  #  #code => "event['@logtime'] = event['@timestamp'].strftime('%Y-%m-%d %H:%M:%S.%L')"
+  #  code => "event['@logtime'] = Time.parse(event['@timestamp'].to_s).strftime('%Y-%m-%d %H:%M:%S.%L')"
+  #}
+  mutate {
+    add_field => { "fromAgent" => "kafka-{{ grains["id"] }}" }
+  }
+  if [type] == "dockerNginxLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{dockerNginxLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+  }
+  if [type] == "dockerHttpdLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{dockerHttpdLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+  }
+  if [type] == "dockerTomcatLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{dockerTomcatLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+  }
+  if [type] == "COMBINEDAPACHELOG" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{COMBINEDAPACHELOG}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    geoip {
+      source => "clientip"
+      add_tag => ["geoip"]
+      database => "/etc/logstash/GeoLiteCity.dat"
+    }
+  }
+  if [type] == "apiWebLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{apiWebLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    geoip {
+      source => "clientip"
+      add_tag => ["geoip"]
+      database => "/etc/logstash/GeoLiteCity.dat"
+    }
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiWebLog" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
+    }
+  }
+  if [type] == "cdnSourcelighttpd" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{cdnSourcelighttpd}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    mutate {
+      add_field => {
+        "fullUrl" => "http://%{hostname}%{request}"
+      }
+    }
+  }
+  if [type] == "cdnSourceapache" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{cdnSourceapache}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    mutate {
+      add_field => {
+        "fullUrl" => "http://%{hostname}%{request}"
+      }
+    }
+  }
+  if [type] == "apiCmsInterfaceLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{apiCmsInterfaceLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiCmsInterfaceLog" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
+    }
+  }
+  if [type] == "apiCmsInterfaceLogNew" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{apiCmsInterfaceLogNew}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    metrics {
+      meter => "events"
+      add_field => { "type" => "apiCmsInterfaceLogNew" }
+      add_tag => [ "meter" ]
+      ignore_older_than => 60
+    }
+  }
+  if [type] == "tvWebLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{tvWebLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "request" => "%{URISPLIT}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+    kv {
+      source => "URIPARAM"
+      field_split => "?&"
+      prefix => "para_"
+      remove_field => [ "para_date" ]
+    }
+  }
+  if [type] == "tvWebErrorLog" {
+    mutate {
+      gsub => ['message', "$", "#"]
+    }
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{tvWebErrorLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+  }
+  if [type] == "apiAppLog" {
+    mutate {
+      gsub => ['message', "\n", "#"]
+    }
+    mutate {
+      gsub => ['message', "$", "##"]
+    }
+    if [message] == "##" {
+      drop {}
+    }
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => [
+        "message" , "%{apiAppLogFormat1}",
+        "message" , "%{apiAppLogFormat2}",
+        "message" , "%{apiAppLogFormat3}"
+      ]
+      tag_on_failure => ["msg_grokFail"]
+    }
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "request" => "%{apiAppLogRequest}" }
+      tag_on_failure => ["kv_grokFail"]
+    }
+    kv {
+      source => "requestParam"
+      field_split => "?&"
+      prefix => "para_"
+    }
+    #metrics {
+    #  meter => "events"
+    #  add_field => { "type" => "apiAppLog" }
+    #  add_tag => [ "meter" ]
+    #  ignore_older_than => 60
+    #}
+  }
+  if [type] == "proftpdLog" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{TMSproftpdLog}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+  }
+  if [type] == "COMMONAPACHELOG" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{COMMONAPACHELOG}" }
+      tag_on_failure => ["msg_grokFail"]
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    host => ["10.64.0.1:9200","10.64.0.2:9200","10.64.0.3:9200"]
+    port => 9200
+    protocol => "http"
+    flush_size => 3000
+    idle_flush_time => 2
+    workers => 4
+    #template => "/etc/logstash/logstashTemplate.json"
+    #template_overwrite => true
+  }
+  #stdout { codec => rubydebug }
+}
+

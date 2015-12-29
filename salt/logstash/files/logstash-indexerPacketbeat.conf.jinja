@@ -1,0 +1,25 @@
+input {
+  redis {
+    codec => "json"
+    host => '{{ pillar["logstash"]["logstash-indexerPacketbeat"]["redisIp"] }}'
+    port => '{{ pillar["logstash"]["logstash-indexerPacketbeat"]["redisPort"] }}'
+    data_type => 'list' 
+    key => '{{ pillar["logstash"]["logstash-indexerPacketbeat"]["redisKey"] }}'
+    batch_count => 2000
+    threads => 5
+  }
+}
+
+output {
+  elasticsearch {
+    host => ["10.64.0.1:9200","10.64.0.2:9200","10.64.0.3:9200"]
+    port => 9200
+    protocol => "http"
+    flush_size => 10000
+    idle_flush_time => 5
+    workers => 8
+    #template => "/etc/logstash/logstashTemplate.json"
+    #template_overwrite => true
+  }
+  #stdout { codec => rubydebug }
+}

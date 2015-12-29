@@ -1,0 +1,19 @@
+{% if grains['osmajorrelease'] != "7" %}
+{% set service = "/sbin/service" %}
+{% else %}
+{% set service = "/usr/sbin/service" %}
+{% endif %}
+
+#自动加载配置文件
+CHECK FILE docker.cfg PATH /usr/local/monit/etc/inc/docker.cfg
+	IF CHANGED SHA1 CHECKSUM
+		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
+
+#服务进程
+CHECK PROCESS docker
+	WITH PIDFILE /var/run/docker.pid
+	START PROGRAM = "{{service}} docker start"
+	STOP PROGRAM  = "{{service}} docker stop"
+	IF CHANGED PID FOR 5 CYCLES THEN RESTART
+	IF CHANGED PID THEN ALERT
+	IF 6 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR

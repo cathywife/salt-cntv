@@ -1,0 +1,28 @@
+log_level: info
+
+publish_port: 4605
+ret_port: 4606
+
+pillar_opts: False
+
+timeout: 30
+
+file_roots:
+  base:
+    - /data/svnClient/devStaff/salt/
+
+pillar_roots:
+  base:
+    - /data/svnClient/devStaff/pillar/
+
+external_auth:
+  pam:
+    songrunpeng:
+      - .*
+      - '@runner'
+      - '@wheel'
+
+rest_cherrypy:
+  port: 8000
+  host: 127.0.0.1
+  disable_ssl: true

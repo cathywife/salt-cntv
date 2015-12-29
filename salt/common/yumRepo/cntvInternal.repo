@@ -10,22 +10,39 @@ baseurl=http://10.64.5.100/repo/centos/$releasever/updates/$basearch/
 enabled=1
 gpgcheck=0
 
+[CentOS-Extras]
+name=CentOS-$releasever-$basearch-Extras
+baseurl=http://10.64.5.100/repo/centos/$releasever/extras/$basearch/
+enabled=1
+gpgcheck=0
+
 [epel]
 name=epel-$releasever-$basearch
 baseurl=http://10.64.5.100/repo/epel/$releasever/$basearch/
 enabled=1
 gpgcheck=0
+#exclude=salt*
 
 [remi]
 name=remi-$releasever-$basearch
 baseurl=http://10.64.5.100/repo/remi/enterprise/$releasever/remi/$basearch/
-#http://mirrors.hustunique.com/remi/enterprise/5/remi/x86_64/
 enabled=0
 gpgcheck=0
 
 [cntvInternal]
 name=cntvInternal-$releasever-$basearch
-baseurl=http://10.64.5.100/cntvInternal/RPMS/$releasever/$basearch/
-#http://10.64.5.100/cntvInternal/RPMS/5/x86_64/
+baseurl=http://10.64.5.100/repo/cntvInternal/RPMS/$releasever/$basearch/
+enabled=0
+gpgcheck=0
+
+[cntvInternal-linux]
+name=cntvInternal-linux-$basearch
+baseurl=http://10.64.5.100/repo/cntvInternal/RPMS/linux/$basearch/
+enabled=0
+gpgcheck=0
+
+[cntvCdh5]
+name=cntvCdh5-$releasever-$basearch
+baseurl=http://10.64.5.100/repo/cntvCdh5/RPMS/$releasever/$basearch/
 enabled=0
 gpgcheck=0

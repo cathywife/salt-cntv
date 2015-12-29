@@ -6,10 +6,17 @@
     - mode: 664
     - order: 1
 
-yumRepo_mkCache:
+yumRepo_clean all:
   cmd.wait:
-    - name: yum makecache
+    - name: "yum clean all --enablerepo=cntvInternal,cntvInternal-linux"
     - user: root
-    - timeout: 45
     - watch:
       - file: /etc/yum.repos.d/cntvInternal.repo
+
+#yumRepo_mkCache:
+#  cmd.wait:
+#    - name: yum makecache
+#    - user: root
+#    - timeout: 45
+#    - watch:
+#      - file: /etc/yum.repos.d/cntvInternal.repo

@@ -2,7 +2,7 @@
 
 ##软件包安装@@
 postfix_pkg:
-  pkg.installed:
+  pkg.latest:
     - names:
       - postfix
       - libgsasl

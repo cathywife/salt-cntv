@@ -30,19 +30,3 @@ autoOps:
     - require:
       - user: autoOps
 
-{% if pillar["crontab"]["rootCrontab"] is iterable %}
-{% for crontabName in pillar["crontab"]["rootCrontab"] %}
-{{ crontabName }}_crontab:
-  file.blockreplace:
-    - name: /etc/crontab
-    - marker_start: "## {{crontabName}} start ##"
-    - marker_end: "## {{crontabName}} end ##"
-    - content: |
-        {{ pillar["crontab"]["rootCrontab"][crontabName] }}
-    - append_if_not_found: True
-    - backup: '.bak'
-{% endfor %}
-{% endif %}
-
-
-

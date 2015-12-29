@@ -83,7 +83,9 @@ stop() {
       sleep 1
     done
     if status ; then
-      echo "$name stop failed; still running."
+      echo "$name stop failed; force killing."
+      kill -9 $pid
+      sleep 2
     else
       echo "$name stopped."
     fi

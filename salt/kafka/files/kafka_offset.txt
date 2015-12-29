@@ -1,0 +1,6 @@
+java -cp KafkaOffsetMonitor-assembly-0.2.1.jar \
+     com.quantifind.kafka.offsetapp.OffsetGetterWeb \
+     --zk elk-zookeeper-1,elk-zookeeper-2,elk-zookeeper-3 \
+     --port 8080 \
+     --refresh 10.seconds \
+     --retain 2.days

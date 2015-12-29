@@ -1,11 +1,13 @@
 #!/bin/env python
+# -*- coding: utf-8 -*-
 
 import commands
 import json
 
 def getRoles():
 	grains={}
-	status, output = commands.getstatusoutput("curl http://saltMaster/saltApi.php?ip=`cat /etc/salt/minion_id` 2> /dev/null")
+	#must be IP
+	status, output = commands.getstatusoutput("curl http://10.70.58.196/saltApi.php?ip=`cat /etc/salt-cntv/minion |grep 'id:' |sed 's/id: //g'` 2> /dev/null")
 	result = json.loads(output)
 	
 	list = []

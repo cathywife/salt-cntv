@@ -1,14 +1,13 @@
 #自动加载配置文件
-CHECK FILE beaver-{{role}}.cfg PATH /usr/local/monit/etc/inc/beaver-{{role}}.cfg
+CHECK FILE beaver.cfg PATH /usr/local/monit/etc/inc/beaver.cfg
 	IF CHANGED SHA1 CHECKSUM
 		THEN EXEC "/usr/local/monit/bin/monit -c /usr/local/monit/etc/monitrc reload"
 
 #服务进程
-CHECK PROCESS beaver-{{role}}
-	WITH PIDFILE /var/run/beaver/{{role}}.pid
-	EVERY 5 CYCLES
-	START PROGRAM = "/etc/init.d/beaver-{{role}} start"
-	STOP PROGRAM  = "/etc/init.d/beaver-{{role}} stop"
-	IF CHANGED PID FOR 3 CYCLES THEN RESTART
+CHECK PROCESS beaver
+	WITH PIDFILE /var/run/beaver/beaver.pid
+	START PROGRAM = "/etc/init.d/beaver start"
+	STOP PROGRAM  = "/etc/init.d/beaver stop"
+	IF CHANGED PID FOR 5 CYCLES THEN RESTART
 	IF CHANGED PID THEN ALERT
-	IF 2 RESTARTS WITHIN 10 CYCLES THEN UNMONITOR
+	IF 6 RESTARTS WITHIN 60 CYCLES THEN UNMONITOR

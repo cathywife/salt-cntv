@@ -6,15 +6,29 @@ input {
     port => '{{ pillar["logstash"]["logstash-indexerBeaver"]["redisPort"] }}'
     data_type => 'list' 
     key => '{{ pillar["logstash"]["logstash-indexerBeaver"]["redisKey"] }}'
-    type => 'beaverLog'
     batch_count => 2000
     threads => 5
   }
 }
 
 filter {
-  ruby {
-    code => "event['@logtime'] = event['@timestamp'].strftime('%Y-%m-%d %H:%M:%S.%L')"
+  #ruby {
+  #  code => "event['@logtime'] = Time.parse(event['@timestamp'].to_s).strftime('%Y-%m-%d %H:%M:%S.%L')"
+  #}
+  mutate {
+    add_field => { "fromAgent" => "redis-{{ grains["id"] }}" }
+  }
+  if [type] == "COMBINEDAPACHELOG" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{COMBINEDAPACHELOG}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    geoip {
+      source => "clientip"
+      add_tag => ["geoip"]
+      database => "/etc/logstash/GeoLiteCity.dat"
+    }
   }
   if [type] == "apiWebLog" {
     grok {
@@ -87,14 +101,44 @@ filter {
       ignore_older_than => 60
     }
   }
+  if [type] == "tvWebErrorLog" {
+    mutate {
+      gsub => ['message', "$", "#"]
+    }
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{tvWebErrorLog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
+    if [type] == "proftpd" {
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "message" => "%{TMSproftpdLog}" }
+      tag_on_failure => ["_grokFail"]
+    }
+  }
   if [type] == "apiAppLog" {
     mutate {
       gsub => ['message', "\n", "#"]
+    }
+    mutate {
+      gsub => ['message', "$", "##"]
     }
     grok {
       patterns_dir => "/etc/logstash/grok-patterns"
       match => { "message" => "%{apiAppLog}" }
       tag_on_failure => ["_grokFail"]
+    }
+    grok {
+      patterns_dir => "/etc/logstash/grok-patterns"
+      match => { "request" => "%{apiAppLogRequest}" }
+      tag_on_failure => ["_grokFail"]
+    }
+    kv {
+      source => "requestParam"
+      field_split => "?&"
+      prefix => "para_"
     }
     metrics {
       meter => "events"
@@ -105,13 +149,16 @@ filter {
   }
 }
 
-output { 
-  elasticsearch_http {
-    host => localhost
+output {
+  elasticsearch {
+    host => ["10.64.0.1:9200","10.64.0.2:9200","10.64.0.3:9200"]
     port => 9200
+    protocol => "http"
     flush_size => 10000
     idle_flush_time => 5
     workers => 8
+    #template => "/etc/logstash/logstashTemplate.json"
+    #template_overwrite => true
   }
   #stdout { codec => rubydebug }
 }

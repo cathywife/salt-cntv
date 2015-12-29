@@ -1,25 +1,18 @@
 ####单机多实例公共配置@@
 
 ##软件包安装@@
-logstash_pkg_java-1.7:
+logstash_pkg_jdk1.8.0_60:
   pkg.installed:
-    - name: java-1.7.0-openjdk-devel
+    - name: jdk1.8.0_60
+    - fromrepo: "cntvInternal,cntvInternal-linux,epel,CentOS-Base,CentOS-Update"
 logstash_pkg:
   pkg.installed:
-    - name: logstash
-    - sources:
-      - logstash: salt://logstash/files/logstash-1.4.2-1_2c0f5a1.noarch.rpm
-    - skip_verify: True
+    - names:
+      - logstash
+    - version: 1.5.4-1
+    - fromrepo: "cntvInternal,cntvInternal-linux,epel,CentOS-Base,CentOS-Update"
     - require:
-      - pkg: logstash_pkg_java-1.7
-logstashContrib_pkg:
-  pkg.installed:
-    - name: logstash-contrib
-    - sources:
-      - logstash-contrib: salt://logstash/files/logstash-contrib-1.4.2-1_efd53ef.noarch.rpm
-    - skip_verify: True
-    - require:
-      - pkg: logstash_pkg_java-1.7
+      - pkg: logstash_pkg_jdk1.8.0_60
 
 ##拷贝files目录下文件@@
 /etc/logstash:

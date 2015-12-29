@@ -1,0 +1,35 @@
+{%- if grains['id'] == "10.64.0.1" %}
+broker.id=1
+{%- elif grains['id'] == "10.64.0.2" %}
+broker.id=2
+{%- elif grains['id'] == "10.64.0.3" %}
+broker.id=3
+{%- endif %}
+
+host.name={{ grains['id'] }}
+
+port=9092
+
+log.dirs=/data/kafka/v1
+log.retention.hours=24
+#100MB
+log.segment.bytes=104857600
+
+zookeeper.connect=10.64.0.1:2181,10.64.0.2:2181,10.64.0.3:2181
+zookeeper.connection.timeout.ms=6000
+
+#优化
+num.partitions=32
+default.replication.factor=2
+
+num.recovery.threads.per.data.dir=2
+num.network.threads={{ grains['num_cpus'] }}
+num.io.threads={{ grains['num_cpus'] * 2 }}
+
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+#可维护
+delete.topic.enable=true
+log.cleaner.enable=true

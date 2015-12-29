@@ -1,0 +1,406 @@
+改之前 正常执行为1.5秒，问题接口对应的SQL语句如下： 
+SELECT  ta.article_id                                                                   ,
+        ta.article_title                                                                ,
+        ta.article_source                                                               ,
+        ta.article_sub_title                                                            ,
+        ta.article_short_title                                                          ,
+        ta.article_catalog                                                              ,
+        ta.article_desc                                                                 ,
+        ta.article_brief                                                                ,
+        ta.article_tag                                                                  ,
+        ta.article_content                                                              ,
+        TO_CHAR(ta.article_current_date,'yyyy-mm-dd hh24:mi:ss') AS article_current_date,
+        ta.article_url                                                                  ,
+        TO_CHAR(ta.article_focus_date,'yyyy-mm-dd hh24:mi:ss') AS article_focus_date    ,
+        ta.article_logo_photo                                                           ,
+        ta.article_logo_photo2                                                          ,
+        ta.article_logo_photo3                                                          ,
+        ta.article_primary_page_id                                                      ,
+        ta.article_editor_name                                                          ,
+        ta.article_editor_id                                                            ,
+        ta.article_publish_status                                                       ,
+        ta.article_delete_flg                                                           ,
+        ta.article_extfield1                                                            ,
+        (
+                SELECT  tw.weixin_title
+                FROM    cmsuser.tab_article_weixin tw
+                WHERE   tw.article_id = ta.article_id
+        ) AS wtitle,
+        (
+                SELECT  tw.weixin_short_title
+                FROM    cmsuser.tab_article_weixin tw
+                WHERE   tw.article_id = ta.article_id
+        ) AS wstitle,
+        (
+                SELECT  tw.weixin_logo_photo
+                FROM    cmsuser.tab_article_weixin tw
+                WHERE   tw.article_id = ta.article_id
+        ) AS wimage,
+        (
+                SELECT  tw.weixin_tag
+                FROM    cmsuser.tab_article_weixin tw
+                WHERE   tw.article_id = ta.article_id
+        ) AS wdesc1,
+        (
+                SELECT  tw.weixin_ext1
+                FROM    cmsuser.tab_article_weixin tw
+                WHERE   tw.article_id = ta.article_id
+        ) AS wdesc2,
+        (
+                SELECT  tw.weixin_ext2
+                FROM    cmsuser.tab_article_weixin tw
+                WHERE   tw.article_id = ta.article_id
+        ) AS wdesc3,
+        (
+                SELECT  t.properties_value
+                FROM    cmsuser.tab_hd_content t
+                WHERE   t.properties_lable ='votesource'
+                        AND t.source_id    =ta.article_id
+        ) AS vote_source,
+        (
+                SELECT  t.properties_value
+                FROM    cmsuser.tab_hd_content t
+                WHERE   t.properties_lable ='voteid'
+                        AND t.source_id    =ta.article_id
+        ) AS vote_id,
+        (
+                SELECT  p.name
+                FROM    cmsuser.tab_page p
+                WHERE   p.page_id = ta.article_primary_page_id
+        ) AS third_class,
+        (
+                SELECT  p.url
+                FROM    cmsuser.tab_page p
+                WHERE   p.page_id = ta.article_primary_page_id
+        ) AS third_url,
+        (
+                SELECT
+                        (
+                                SELECT tp.name FROM cmsuser.tab_page tp WHERE tp.page_id = p.father_id
+                        )
+                FROM    cmsuser.tab_page p
+                WHERE   p.page_id = ta.article_primary_page_id
+        ) AS second_class,
+        (
+                SELECT
+                        (
+                                SELECT tp.url FROM cmsuser.tab_page tp WHERE tp.page_id = p.father_id
+                        )
+                FROM    cmsuser.tab_page p
+                WHERE   p.page_id = ta.article_primary_page_id
+        ) AS second_url,
+        (
+                SELECT  t.properties_value
+                FROM    cmsuser.tab_hd_content t
+                WHERE   t.properties_lable ='allow_share'
+                        AND t.source_id    =ta.article_id
+        ) AS allow_share,
+        (
+                SELECT  t.properties_value
+                FROM    cmsuser.tab_hd_content t
+                WHERE   t.properties_lable ='allow_praise'
+                        AND t.source_id    =ta.article_id
+        ) AS allow_praise,
+        (
+                SELECT  t.properties_value
+                FROM    cmsuser.tab_hd_content t
+                WHERE   t.properties_lable ='allow_comment'
+                        AND t.source_id    =ta.article_id
+        ) AS allow_comment
+FROM    cmsuser.tab_article ta
+WHERE   ta.article_delete_flg     = '0'
+        AND ta.article_focus_date > to_date('1970-01-01 08:00:00','yyyy-mm-dd hh24:mi:ss')
+        AND ta.article_id         ='ARTI1448712751359844'
+
+Elapsed: 00:00:00.14
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2002621206
+
+-------------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation                          | Name                           | Rows  | Bytes | Cost (%CPU)| Time     | Pstart| Pstop |
+-------------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                   |                                |     1 |   673 |     3   (0)| 00:00:01 |       |       |
+|*  1 |  TABLE ACCESS FULL                 | TAB_ARTICLE_WEIXIN             |     1 |    23 |  1077   (1)| 00:00:13 |       |       |
+|*  2 |  TABLE ACCESS FULL                 | TAB_ARTICLE_WEIXIN             |     1 |    23 |  1077   (1)| 00:00:13 |       |       |
+|*  3 |  TABLE ACCESS FULL                 | TAB_ARTICLE_WEIXIN             |     1 |    23 |  1077   (1)| 00:00:13 |       |       |
+|*  4 |  TABLE ACCESS FULL                 | TAB_ARTICLE_WEIXIN             |     1 |    23 |  1077   (1)| 00:00:13 |       |       |
+|*  5 |  TABLE ACCESS FULL                 | TAB_ARTICLE_WEIXIN             |     1 |    23 |  1077   (1)| 00:00:13 |       |       |
+|*  6 |  TABLE ACCESS FULL                 | TAB_ARTICLE_WEIXIN             |     1 |    23 |  1077   (1)| 00:00:13 |       |       |
+|   7 |  TABLE ACCESS BY INDEX ROWID       | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|*  8 |   INDEX RANGE SCAN                 | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|   9 |  TABLE ACCESS BY INDEX ROWID       | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 10 |   INDEX RANGE SCAN                 | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  11 |  TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    56 |     3   (0)| 00:00:01 |       |       |
+|* 12 |   INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  13 |  TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    31 |     3   (0)| 00:00:01 |       |       |
+|* 14 |   INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  15 |  TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    56 |     3   (0)| 00:00:01 |       |       |
+|* 16 |   INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  17 |  TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    42 |     3   (0)| 00:00:01 |       |       |
+|* 18 |   INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  19 |  TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    31 |     3   (0)| 00:00:01 |       |       |
+|* 20 |   INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  21 |  TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    42 |     3   (0)| 00:00:01 |       |       |
+|* 22 |   INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  23 |  TABLE ACCESS BY INDEX ROWID       | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 24 |   INDEX RANGE SCAN                 | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  25 |  TABLE ACCESS BY INDEX ROWID       | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 26 |   INDEX RANGE SCAN                 | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  27 |  TABLE ACCESS BY INDEX ROWID       | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 28 |   INDEX RANGE SCAN                 | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|* 29 |  TABLE ACCESS BY GLOBAL INDEX ROWID| TAB_ARTICLE                    |     1 |   673 |     3   (0)| 00:00:01 | ROWID | ROWID |
+|* 30 |   INDEX UNIQUE SCAN                | SYS_C0018223                   |     1 |       |     2   (0)| 00:00:01 |       |       |
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter("TW"."ARTICLE_ID"=:B1)
+   2 - filter("TW"."ARTICLE_ID"=:B1)
+   3 - filter("TW"."ARTICLE_ID"=:B1)
+   4 - filter("TW"."ARTICLE_ID"=:B1)
+   5 - filter("TW"."ARTICLE_ID"=:B1)
+   6 - filter("TW"."ARTICLE_ID"=:B1)
+   8 - access("T"."PROPERTIES_LABLE"='votesource' AND "T"."SOURCE_ID"=:B1)
+  10 - access("T"."PROPERTIES_LABLE"='voteid' AND "T"."SOURCE_ID"=:B1)
+  12 - access("P"."PAGE_ID"=:B1)
+  14 - access("P"."PAGE_ID"=:B1)
+  16 - access("TP"."PAGE_ID"=:B1)
+  18 - access("P"."PAGE_ID"=:B1)
+  20 - access("TP"."PAGE_ID"=:B1)
+  22 - access("P"."PAGE_ID"=:B1)
+  24 - access("T"."PROPERTIES_LABLE"='allow_share' AND "T"."SOURCE_ID"=:B1)
+  26 - access("T"."PROPERTIES_LABLE"='allow_praise' AND "T"."SOURCE_ID"=:B1)
+  28 - access("T"."PROPERTIES_LABLE"='allow_comment' AND "T"."SOURCE_ID"=:B1)
+  29 - filter("TA"."ARTICLE_DELETE_FLG"='0' AND "TA"."ARTICLE_FOCUS_DATE">TO_DATE(' 1970-01-01 08:00:00', 'syyyy-mm-dd
+              hh24:mi:ss'))
+  30 - access("TA"."ARTICLE_ID"='ARTI1448712751359844')
+
+
+Statistics
+----------------------------------------------------------
+          0  recursive calls
+          0  db block gets
+      23125  consistent gets
+          0  physical reads
+          0  redo size
+      29948  bytes sent via SQL*Net to client
+      22744  bytes received via SQL*Net from client
+         14  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+          1  rows processed
+
+
+改语句如下：
+select ta.article_id,
+       ta.article_title,
+       ta.article_source,
+       ta.article_sub_title,
+       ta.article_short_title,
+       ta.article_catalog,
+       ta.article_desc,
+       ta.article_brief,
+       ta.article_tag,
+       ta.article_content,
+       to_char(ta.article_current_date, 'yyyy-mm-dd hh24:mi:ss') as article_current_date,
+       ta.article_url,
+       to_char(ta.article_focus_date, 'yyyy-mm-dd hh24:mi:ss') as article_focus_date,
+       ta.article_logo_photo,
+       ta.article_logo_photo2,
+       ta.article_logo_photo3,
+       ta.article_primary_page_id,
+       ta.article_editor_name,
+       ta.article_editor_id,
+       ta.article_publish_status,
+       ta.article_delete_flg,
+       ta.article_extfield1,
+    tw.weixin_title as wtitle,
+    tw.weixin_short_title as wstitle,
+    tw.weixin_logo_photo as wimage,
+    tw.weixin_tag  as wdesc1,
+    tw.weixin_ext1 as wdesc2,
+    tw.weixin_ext2 as wdesc3,
+    (select t.properties_value from cmsuser.tab_hd_content t where t.properties_lable ='votesource' and t.source_id=ta.article_id) as vote_source,
+    (select t.properties_value from cmsuser.tab_hd_content t where t.properties_lable ='voteid' and t.source_id=ta.article_id) as vote_id,
+    p.name as third_class,
+    p.url  as third_url,
+    (select tp.name from cmsuser.tab_page tp where tp.page_id = p.father_id) as second_class,
+    (select tp.url from cmsuser.tab_page tp where tp.page_id = p.father_id) as second_url,
+  (select t.properties_value
+          from cmsuser.tab_hd_content t
+         where t.properties_lable = 'allow_share'
+           and t.source_id = ta.article_id) as allow_share,
+       (select t.properties_value
+          from cmsuser.tab_hd_content t
+         where t.properties_lable = 'allow_praise'
+           and t.source_id = ta.article_id) as allow_praise,
+       (select t.properties_value
+          from cmsuser.tab_hd_content t
+         where t.properties_lable = 'allow_comment'
+           and t.source_id = ta.article_id) as allow_comment
+  from cmsuser.tab_article ta, cmsuser.tab_article_weixin tw,cmsuser.tab_page p
+ where tw.article_id(+) = ta.article_id
+ and p.page_id(+) = ta.article_primary_page_id
+   and ta.article_delete_flg = '0'
+   and ta.article_focus_date >
+       to_date('1970-01-01 08:00:00', 'yyyy-mm-dd hh24:mi:ss')
+   and ta.article_id = 'ARTI1448710468237129'
+   
+Elapsed: 00:00:00.04
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 4076274245
+
+---------------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation                            | Name                           | Rows  | Bytes | Cost (%CPU)| Time     | Pstart| Pstop |
+---------------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                     |                                |     1 |   793 |  1082   (1)| 00:00:13 |       |       |
+|   1 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|*  2 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|   3 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|*  4 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|   5 |  TABLE ACCESS BY INDEX ROWID         | TAB_PAGE                       |     1 |    56 |     3   (0)| 00:00:01 |       |       |
+|*  6 |   INDEX UNIQUE SCAN                  | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|   7 |  TABLE ACCESS BY INDEX ROWID         | TAB_PAGE                       |     1 |    31 |     3   (0)| 00:00:01 |       |       |
+|*  8 |   INDEX UNIQUE SCAN                  | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|   9 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 10 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  11 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 12 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  13 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 14 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  15 |  NESTED LOOPS OUTER                  |                                |     1 |   793 |  1082   (1)| 00:00:13 |       |       |
+|  16 |   NESTED LOOPS OUTER                 |                                |     1 |   760 |     5   (0)| 00:00:01 |       |       |
+|* 17 |    TABLE ACCESS BY GLOBAL INDEX ROWID| TAB_ARTICLE                    |     1 |   673 |     3   (0)| 00:00:01 | ROWID | ROWID |
+|* 18 |     INDEX UNIQUE SCAN                | SYS_C0018223                   |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  19 |    TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    87 |     2   (0)| 00:00:01 |       |       |
+|* 20 |     INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     1   (0)| 00:00:01 |       |       |
+|* 21 |   TABLE ACCESS FULL                  | TAB_ARTICLE_WEIXIN             |     1 |    33 |  1077   (1)| 00:00:13 |       |       |
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   2 - access("T"."PROPERTIES_LABLE"='votesource' AND "T"."SOURCE_ID"=:B1)
+   4 - access("T"."PROPERTIES_LABLE"='voteid' AND "T"."SOURCE_ID"=:B1)
+   6 - access("TP"."PAGE_ID"=:B1)
+   8 - access("TP"."PAGE_ID"=:B1)
+  10 - access("T"."PROPERTIES_LABLE"='allow_share' AND "T"."SOURCE_ID"=:B1)
+  12 - access("T"."PROPERTIES_LABLE"='allow_praise' AND "T"."SOURCE_ID"=:B1)
+  14 - access("T"."PROPERTIES_LABLE"='allow_comment' AND "T"."SOURCE_ID"=:B1)
+  17 - filter("TA"."ARTICLE_DELETE_FLG"='0' AND "TA"."ARTICLE_FOCUS_DATE">TO_DATE(' 1970-01-01 08:00:00', 'syyyy-mm-dd
+              hh24:mi:ss'))
+  18 - access("TA"."ARTICLE_ID"='ARTI1448710468237129')
+  20 - access("P"."PAGE_ID"(+)="TA"."ARTICLE_PRIMARY_PAGE_ID")
+  21 - filter("TW"."ARTICLE_ID"(+)='ARTI1448710468237129')
+
+
+Statistics
+----------------------------------------------------------
+          0  recursive calls
+          0  db block gets
+       3879  consistent gets
+          0  physical reads
+          0  redo size
+      25269  bytes sent via SQL*Net to client
+      18225  bytes received via SQL*Net from client
+         13  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+          1  rows processed
+          
+ 
+Elapsed: 00:00:00.01
+ 
+
+收集统计信息，改sql，加绑定变量，加索引
+create index ind_ARTCLE_ID on cmsuser.TAB_ARTICLE_WEIXIN(ARTICLE_ID)  tablespace CMS_INDX online;
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 1124388416
+
+---------------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation                            | Name                           | Rows  | Bytes | Cost (%CPU)| Time     | Pstart| Pstop |
+---------------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                     |                                |     1 |   793 |     8   (0)| 00:00:01 |       |       |
+|   1 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|*  2 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|   3 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|*  4 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|   5 |  TABLE ACCESS BY INDEX ROWID         | TAB_PAGE                       |     1 |    56 |     3   (0)| 00:00:01 |       |       |
+|*  6 |   INDEX UNIQUE SCAN                  | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|   7 |  TABLE ACCESS BY INDEX ROWID         | TAB_PAGE                       |     1 |    31 |     3   (0)| 00:00:01 |       |       |
+|*  8 |   INDEX UNIQUE SCAN                  | PAGE_ID                        |     1 |       |     2   (0)| 00:00:01 |       |       |
+|   9 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 10 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  11 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 12 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  13 |  TABLE ACCESS BY INDEX ROWID         | TAB_HD_CONTENT                 |     1 |    38 |     4   (0)| 00:00:01 |       |       |
+|* 14 |   INDEX RANGE SCAN                   | IDX_PROPERTIES_LABLE_SOURCE_ID |     1 |       |     3   (0)| 00:00:01 |       |       |
+|  15 |  NESTED LOOPS OUTER                  |                                |     1 |   793 |     8   (0)| 00:00:01 |       |       |
+|  16 |   NESTED LOOPS OUTER                 |                                |     1 |   760 |     5   (0)| 00:00:01 |       |       |
+|* 17 |    TABLE ACCESS BY GLOBAL INDEX ROWID| TAB_ARTICLE                    |     1 |   673 |     3   (0)| 00:00:01 | ROWID | ROWID |
+|* 18 |     INDEX UNIQUE SCAN                | SYS_C0018223                   |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  19 |    TABLE ACCESS BY INDEX ROWID       | TAB_PAGE                       |     1 |    87 |     2   (0)| 00:00:01 |       |       |
+|* 20 |     INDEX UNIQUE SCAN                | PAGE_ID                        |     1 |       |     1   (0)| 00:00:01 |       |       |
+|  21 |   TABLE ACCESS BY INDEX ROWID        | TAB_ARTICLE_WEIXIN             |     1 |    33 |     3   (0)| 00:00:01 |       |       |
+|* 22 |    INDEX RANGE SCAN                  | IND_ARTCLE_ID                  |     1 |       |     2   (0)| 00:00:01 |       |       |
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   2 - access("T"."PROPERTIES_LABLE"='votesource' AND "T"."SOURCE_ID"=:B1)
+   4 - access("T"."PROPERTIES_LABLE"='voteid' AND "T"."SOURCE_ID"=:B1)
+   6 - access("TP"."PAGE_ID"=:B1)
+   8 - access("TP"."PAGE_ID"=:B1)
+  10 - access("T"."PROPERTIES_LABLE"='allow_share' AND "T"."SOURCE_ID"=:B1)
+  12 - access("T"."PROPERTIES_LABLE"='allow_praise' AND "T"."SOURCE_ID"=:B1)
+  14 - access("T"."PROPERTIES_LABLE"='allow_comment' AND "T"."SOURCE_ID"=:B1)
+  17 - filter("TA"."ARTICLE_DELETE_FLG"='0' AND "TA"."ARTICLE_FOCUS_DATE">TO_DATE(' 1970-01-01 08:00:00', 'syyyy-mm-dd
+              hh24:mi:ss'))
+  18 - access("TA"."ARTICLE_ID"='ARTI1448710468237129')
+  20 - access("P"."PAGE_ID"(+)="TA"."ARTICLE_PRIMARY_PAGE_ID")
+  22 - access("TW"."ARTICLE_ID"(+)='ARTI1448710468237129')
+
+
+Statistics
+----------------------------------------------------------
+          0  recursive calls
+          0  db block gets
+         36  consistent gets
+          0  physical reads
+          0  redo size
+      25269  bytes sent via SQL*Net to client
+      18225  bytes received via SQL*Net from client
+         13  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+          1  rows processed
+
+sys@CMS1>
+
+其他参考：
+article_id为主键，17 - filter("TA"."ARTICLE_DELETE_FLG"='0' AND "TA"."ARTICLE_FOCUS_DATE">TO_DATE(' 1970-01-01 08:00:00', 'syyyy-mm-dd hh24:mi:ss')) 影响不大。
+select count(*) from cmsuser.tab_article ta where 
+  2  ta.article_delete_flg = '0' and ta.article_focus_date >  to_date('1970-01-01 08:00:00', 'yyyy-mm-dd hh24:mi:ss')   and ta.article_id = 'ARTI1448710468237129';
+
+  COUNT(*)
+----------
+	 1
+
+select count(*) from cmsuser.tab_article ta where 
+  2  ta.article_id = 'ARTI1448710468237129';
+
+  COUNT(*)
+----------
+	 1
+
+sys@CMS1>select count(*),article_id from cmsuser.tab_article ta group by article_id having count(*)>1;
+
+no rows selected

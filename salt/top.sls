@@ -13,14 +13,23 @@ base:
   'P@roles:baseB':
     - match: compound
     - common.baseHosts
+    - common.basePkgs
     - common.cmdHistoryAudit
     - common.rsyslog
     - common.crontab
-    - common.user
+    - common.sshd-key
     - common.motd
     - common.cntvSysCmds
     - common.monit
     - common.sudoers
+    - common.yumRepo
+
+  'P@roles:baseLite':
+    - match: compound
+    - common.baseHosts
+    - common.basePkgs
+    - common.motd
+    - common.cntvSysCmds
 
   'P@roles:logCollecter':
     - match: compound
@@ -38,9 +47,8 @@ base:
   'P@roles:api.cntv.cn-web':
     - match: compound
     - project.api-cntv-cn-web
-    - beaver
 
-  'P@roles:logstash-indexerSyslog or I@roles:logstash-indexerBeaver':
+  'P@roles:logstash-indexer*':
     - match: compound
     - logstash
 
@@ -59,6 +67,26 @@ base:
   'P@roles:smtpRelayServer':
     - match: compound
     - postfix
+
+  'P@roles:cdh5':
+    - match: compound
+    - cdh5
+
+  'P@roles:docker':
+    - match: compound
+    - docker
+
+  'P@roles:kafka-zk':
+    - match: compound
+    - zookeeper
+
+  'P@roles:kafka':
+    - match: compound
+    - kafka
+
+  'P@roles:es2':
+    - match: compound
+    - elasticsearch2
 
 #  'P@roles:(tms-rsync|tms-ftp|tms-app|tms-mysql|api.cntv.cn-web|cdnSource-img|cdnSource-page|cdnSource-page|openLDAP)':
 #    - match: compound
